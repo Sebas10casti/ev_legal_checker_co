@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>¿Qué exige la ley para mi vehículo eléctrico en Colombia? | Ley 2486 de 2025 vs Res. 160 de 2017</title>
+    <title>Validador Legal de Movilidad Eléctrica en Colombia | Ley 2486 de 2025 vs Res. 160 de 2017</title>
     <meta
       name="description"
-      content="Calculadora y validador normativo interactivo de movilidad eléctrica en Colombia. Descubre si tu patineta, bicicleta eléctrica o ciclomotor requiere SOAT, licencia y matrícula bajo la Ley 2486 de 2025."
+      content="Calculadora y validador normativo interactivo de movilidad eléctrica en Colombia. Evalúa si tu patineta, bicicleta eléctrica o ciclomotor requiere SOAT, placa y licencia bajo la Ley 2486 de 2025."
     />
 
     <!-- Inicialización temprana de modo claro/oscuro para evitar parpadeo (FOUC) -->
@@ -24,7 +24,15 @@
       })();
     </script>
 
-    <!-- Tailwind CSS CDN con soporte para modo oscuro por clase -->
+    <!-- Google Fonts: Plus Jakarta Sans + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS CDN configurado con fuentes tipográficas específicas y paleta cívica -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -32,42 +40,45 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+              sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+            },
+            colors: {
+              colombia: {
+                yellow: '#facc15',
+                blue: '#1d4ed8',
+                red: '#e11d48',
+              },
             },
           },
         },
       };
     </script>
 
-    <!-- Fuente Inter opcional + Estilos locales con ruta relativa para GitHub Pages -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Estilos de componentes locales -->
     <link rel="stylesheet" href="./styles/main.css" />
   </head>
 
-  <body class="min-h-full flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
-    <!-- HEADER PRINCIPAL -->
-    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-2xs">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+  <body class="min-h-full flex flex-col bg-slate-100/80 dark:bg-[#0a0f18] text-slate-900 dark:text-slate-100 antialiased selection:bg-emerald-600 selection:text-white">
+    <!-- HEADER CÍVICO NORMATIVO -->
+    <header class="bg-white dark:bg-[#101725] border-b border-slate-200 dark:border-slate-800/80 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div class="space-y-1">
-            <div class="inline-flex items-center gap-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                🇨🇴 Normativa Vigente Colombia
+            <div class="inline-flex items-center gap-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
+                <span class="text-xs">🇨🇴</span>
+                <span>Normativa de Tránsito Colombia</span>
               </span>
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span class="text-xs font-mono font-medium text-slate-500 dark:text-slate-400">
                 Ley 2486 de 2025 vs. Resolución 160 de 2017
               </span>
             </div>
-            <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              ¿Qué exige la ley para mi vehículo eléctrico en Colombia?
+            <h1 class="text-xl sm:text-2xl lg:text-[1.75rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+              ¿Qué exige la ley para mi vehículo eléctrico?
             </h1>
-            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl">
-              Validador interactivo en tiempo real para patinetas eléctricas, bicicletas de pedaleo asistido, monociclos y ciclomotores según la <strong>Ley 2486 de 2025 (VELMPU)</strong> y la <strong>Resolución 160 de 2017</strong>.
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
+              Diagnóstico normativo en tiempo real para patinetas, bicicletas eléctricas, monociclos y ciclomotores. Consulta exigencias de SOAT, matrícula, licencia y límites de velocidad.
             </p>
           </div>
 
@@ -76,64 +87,64 @@
               type="button"
               id="btn-theme-toggle"
               aria-pressed="false"
-              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-emerald-600 transition-colors cursor-pointer"
             >
               <svg class="w-4 h-4 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="4" />
                 <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
               </svg>
-              <span id="theme-toggle-label">Modo Oscuro</span>
+              <span id="theme-toggle-label">Modo oscuro</span>
             </button>
           </div>
         </div>
 
         <!-- Aviso Legal Informativo -->
-        <div class="mt-3 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/70 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-          <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <div class="mt-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 flex items-start sm:items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+          <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 mt-0.5 sm:mt-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
-          <span>
-            <strong>Aviso legal:</strong> Esta aplicación es una herramienta informativa y pedagógica. No constituye asesoría jurídica oficial ni reemplaza las disposiciones del Ministerio de Transporte o autoridades de tránsito locales.
-          </span>
+          <p class="leading-relaxed">
+            <strong class="font-semibold text-slate-800 dark:text-slate-200">Aviso informativo:</strong> Esta herramienta pedagógica evalúa los requisitos técnicos vigentes del Código Nacional de Tránsito y no reemplaza el criterio formal de los agentes o autoridades viales.
+          </p>
         </div>
       </div>
     </header>
 
-    <!-- CONTENIDO PRINCIPAL (GRID DE 2 COLUMNAS EN DESKTOP, APILADO EN MÓVIL) -->
+    <!-- CONTENIDO PRINCIPAL: 2 COLUMNAS (CONTROLES / DICTAMEN) -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-        <!-- Columna Izquierda: Configuración del Vehículo (5 cols en lg) -->
-        <div id="vehicle-form-root" class="lg:col-span-5 lg:sticky lg:top-36"></div>
+        <!-- Columna Izquierda: Parámetros del Vehículo (5 cols en lg) -->
+        <div id="vehicle-form-root" class="lg:col-span-5 lg:sticky lg:top-32"></div>
 
-        <!-- Columna Derecha: Resultados en Vivo (7 cols en lg) -->
+        <!-- Columna Derecha: Dictamen y Resultados en Vivo (7 cols en lg) -->
         <div id="results-dashboard-root" class="lg:col-span-7"></div>
       </div>
     </main>
 
-    <!-- FOOTER CON ENLACES OFICIALES Y BOTONES PARA COMPARTIR -->
-    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-10">
+    <!-- FOOTER CON ENLACES OFICIALES Y UTILIDADES DE COMPARTIR -->
+    <footer class="bg-white dark:bg-[#101725] border-t border-slate-200 dark:border-slate-800/80 mt-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div class="space-y-1">
-            <h2 class="text-sm font-bold text-slate-900 dark:text-white">
-              Comparte o consulta las fuentes normativas oficiales
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div class="space-y-1.5">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Fuentes oficiales del marco normativo
             </h2>
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
               <a
                 href="https://dapre.presidencia.gov.co/normativa/leyes"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                class="font-medium text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
               >
-                Texto Oficial Ley 2486 de 2025 (Presidencia / Congreso) ↗
+                Ley 2486 de 2025 (Presidencia / Congreso) ↗
               </a>
               <a
                 href="https://www.mintransporte.gov.co/loader.php?lServicio=Tools2&lTipo=descargas&lFuncion=descargar&idFile=23261"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                class="font-medium text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
               >
                 Resolución 160 de 2017 (MinTransporte) ↗
               </a>
@@ -144,7 +155,7 @@
             <button
               type="button"
               id="btn-share-whatsapp"
-              class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors cursor-pointer"
+              class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-emerald-600"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
@@ -155,7 +166,7 @@
             <button
               type="button"
               id="btn-copy-link"
-              class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-emerald-600"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -168,13 +179,13 @@
 
         <p
           id="copy-feedback-toast"
-          class="hidden mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-400 text-right"
+          class="hidden mt-3 text-xs font-semibold text-emerald-700 dark:text-emerald-400 text-right"
           role="status"
         ></p>
       </div>
     </footer>
 
-    <!-- Script principal modular con ruta relativa -->
+    <!-- Script principal de la aplicación -->
     <script type="module" src="./src/app.js"></script>
   </body>
 </html>

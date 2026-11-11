@@ -315,8 +315,9 @@ export function renderResultsDashboard(container, evaluation) {
               ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
               : 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800'
           }">
-            <div class="p-4 sm:p-5 flex flex-col md:flex-row items-center gap-5">
-              <div class="w-full md:w-56 shrink-0 aspect-[4/3] rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-xs bg-white dark:bg-slate-900">
+            <div class="p-4 sm:p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
+              <!-- Contenedor de la ilustración con tamaño contenido -->
+              <div class="w-48 sm:w-52 shrink-0 aspect-[4/3] rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-white dark:bg-slate-900 p-1">
                 <img
                   src="${isVelmpu ? './styles/casco-velmpu.svg' : './styles/casco-ciclomotor.svg'}"
                   alt="Ilustración técnica del tipo de casco reglamentario para este vehículo"
@@ -324,7 +325,9 @@ export function renderResultsDashboard(container, evaluation) {
                   loading="lazy"
                 />
               </div>
-              <div class="flex-1 space-y-2">
+
+              <!-- Bloque explicativo sin superposiciones -->
+              <div class="flex-1 min-w-0 space-y-2">
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wide ${
                     isVelmpu
@@ -338,7 +341,7 @@ export function renderResultsDashboard(container, evaluation) {
                   </span>
                 </div>
 
-                <h4 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                <h4 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
                   ${
                     isVelmpu
                       ? '¿Qué casco exige la ley para patineta o bicicleta eléctrica?'

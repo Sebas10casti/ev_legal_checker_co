@@ -1,64 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" width="100%" height="100%">
   <defs>
-    <linearGradient id="bicycleHelmetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#059669" />
+    <!-- Gradiente de la carcasa ciclista -->
+    <linearGradient id="bikeShellGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#059669" />
       <stop offset="100%" stop-color="#047857" />
     </linearGradient>
-    <linearGradient id="innerShade" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b" />
-      <stop offset="100%" stop-color="#0f172a" />
+    <linearGradient id="innerCavity" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
     </linearGradient>
-    <filter id="dropGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#059669" flood-opacity="0.25" />
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#059669" flood-opacity="0.22" />
     </filter>
   </defs>
 
-  <!-- Fondo de tarjeta -->
-  <rect width="100%" height="100%" rx="16" fill="#f0fdf4" />
-  <rect width="100%" height="100%" rx="16" fill="none" stroke="#86efac" stroke-width="2" />
+  <!-- Fondo limpio -->
+  <rect width="100%" height="100%" rx="14" fill="#f0fdf4" />
+  <rect width="100%" height="100%" rx="14" fill="none" stroke="#bbf7d0" stroke-width="1.5" />
 
-  <!-- Insignia superior -->
-  <g transform="translate(20, 24)">
-    <rect width="170" height="26" rx="13" fill="#dcfce7" />
-    <text x="85" y="17" fill="#166534" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" text-anchor="middle">
-      ✓ VÁLIDO PARA VELMPU
+  <g filter="url(#softShadow)" transform="translate(18, 12)">
+    <!-- Correas en V bajo las orejas -->
+    <path d="M 90 90 L 125 142" stroke="#334155" stroke-width="3.5" stroke-linecap="round" fill="none" />
+    <path d="M 160 90 L 125 142" stroke="#334155" stroke-width="3.5" stroke-linecap="round" fill="none" />
+    <!-- Barboquejo bajo la barbilla -->
+    <path d="M 125 142 L 155 142" stroke="#334155" stroke-width="3.5" stroke-linecap="round" fill="none" />
+    <path d="M 190 90 L 155 142" stroke="#475569" stroke-width="3" stroke-linecap="round" fill="none" />
+
+    <!-- Hebilla de ajuste micrométrico / clip abrochado -->
+    <rect x="133" y="137" width="14" height="10" rx="2.5" fill="#0f172a" stroke="#64748b" stroke-width="1" />
+    <line x1="140" y1="138" x2="140" y2="146" stroke="#e2e8f0" stroke-width="1.5" />
+
+    <!-- Carcasa externa del casco de ciclismo (silueta ergonómica lateral) -->
+    <path d="M 40 92 
+             C 32 75, 45 42, 90 28 
+             C 140 12, 210 22, 245 68 
+             C 255 82, 252 95, 235 96 
+             C 215 97, 195 90, 160 92 
+             C 120 94, 75 99, 40 92 Z" 
+          fill="url(#bikeShellGrad)" />
+
+    <!-- Borde interior inferior acolchado EPS negro -->
+    <path d="M 42 92 C 75 97, 120 92, 160 90 C 195 88, 215 95, 235 94 C 238 96, 235 100, 228 101 C 190 102, 120 101, 40 95 Z" 
+          fill="#1e293b" />
+
+    <!-- Visera aerodinámica frontal -->
+    <path d="M 40 92 C 26 94, 15 96, 12 98 C 22 102, 38 101, 46 96 Z" fill="#0f172a" />
+
+    <!-- Tomas / ranuras de ventilación aerodinámicas con profundidad -->
+    <path d="M 75 48 C 95 44, 120 42, 142 45 C 136 56, 110 60, 85 58 Z" fill="url(#innerCavity)" />
+    <path d="M 68 67 C 90 64, 130 63, 165 66 C 158 78, 115 80, 78 78 Z" fill="url(#innerCavity)" />
+    <path d="M 160 48 C 182 50, 205 60, 218 72 C 205 76, 185 71, 172 60 Z" fill="url(#innerCavity)" />
+
+    <!-- Luz reflectiva / reflectante de seguridad posterior -->
+    <rect x="230" y="80" width="12" height="7" rx="2" fill="#ef4444" stroke="#b91c1c" stroke-width="1" />
+
+    <!-- Sello de norma NTC / EN -->
+    <rect x="180" y="85" width="28" height="9" rx="2" fill="#064e3b" />
+    <text x="194" y="92" fill="#a7f3d0" font-family="system-ui, sans-serif" font-size="6.5" font-weight="bold" text-anchor="middle">
+      EN 1078
     </text>
   </g>
 
-  <!-- Ilustración del Casco de Ciclismo / Patineta -->
-  <g filter="url(#dropGlow)" transform="translate(100, 50)">
-    <!-- Correas de sujeción (Barboquejo) -->
-    <path d="M 65 110 L 85 175 L 115 175 L 135 110" fill="none" stroke="#475569" stroke-width="4.5" stroke-linecap="round" />
-    <!-- Hebilla abrochada -->
-    <rect x="90" y="168" width="20" height="12" rx="3" fill="#0f172a" />
-    <rect x="95" y="171" width="10" height="6" rx="1" fill="#94a3b8" />
-
-    <!-- Carcasa principal aerodinámica -->
-    <path d="M 30 115 C 20 80, 50 35, 100 30 C 150 25, 185 65, 175 115 C 160 120, 140 122, 100 122 C 60 122, 45 120, 30 115 Z" 
-          fill="url(#bicycleHelmetGrad)" />
-
-    <!-- Visera frontal -->
-    <path d="M 28 112 C 15 115, 8 118, 5 120 C 18 126, 35 124, 45 120 Z" fill="#0f172a" />
-
-    <!-- Ranuras de ventilación características -->
-    <path d="M 60 55 C 75 52, 95 50, 110 52 C 105 65, 85 68, 65 65 Z" fill="url(#innerShade)" />
-    <path d="M 50 78 C 70 75, 100 73, 130 75 C 122 90, 80 92, 55 90 Z" fill="url(#innerShade)" />
-    <path d="M 125 55 C 145 58, 155 68, 160 80 C 150 82, 138 78, 132 68 Z" fill="url(#innerShade)" />
-
-    <!-- Detalle de luz reflectiva trasera -->
-    <rect x="155" y="102" width="16" height="8" rx="2" fill="#ef4444" />
-  </g>
-
-  <!-- Especificaciones al pie -->
-  <g transform="translate(20, 230)">
-    <text x="0" y="0" fill="#0f172a" font-family="system-ui, sans-serif" font-size="14" font-weight="bold">
-      Casco de Movilidad Personal / Ciclismo
-    </text>
-    <text x="0" y="20" fill="#15803d" font-family="system-ui, sans-serif" font-size="12" font-weight="600">
-      Normas: NTC 5239 · EN 1078 · CPSC 1203
-    </text>
-    <text x="0" y="38" fill="#475569" font-family="system-ui, sans-serif" font-size="11">
-      Obligatorio barboquejo cerrado. Evita inmovilización en Ley 2486.
-    </text>
-  </g>
+  <!-- Píldora inferior compacta e independiente -->
+  <rect x="24" y="180" width="272" height="26" rx="6" fill="#dcfce7" stroke="#86efac" stroke-width="1" />
+  <text x="160" y="197" fill="#14532d" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" text-anchor="middle">
+    ✓ Casco de Ciclismo / Patineta (Abrochado)
+  </text>
 </svg>

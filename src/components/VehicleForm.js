@@ -185,9 +185,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="3000"
                 step="10"
                 aria-label="Potencia nominal en Vatios"
-                class="w-24 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
+                class="w-24 px-2 py-1 text-right text-xs font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">W</span>
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">W</span>
             </div>
           </div>
 
@@ -203,7 +203,7 @@ export function mountVehicleForm(container, initialState, onChange) {
 
           <!-- Marcas de referencia técnica (350W y 1000W) -->
           <div class="relative h-7 mt-1.5 text-[10px] select-none">
-            <span class="absolute left-0 top-0.5 font-mono text-slate-400">100W</span>
+            <span class="absolute left-0 top-0.5 text-slate-400">100W</span>
             <button
               type="button"
               data-jump-field="powerWatts"
@@ -213,7 +213,7 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="Fijar en 350 W (Umbral Bogotá ciclorrutas)"
             >
               <span class="w-0.5 h-1.5 bg-amber-500"></span>
-              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 font-mono font-semibold border border-amber-300 dark:border-amber-800">
+              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 font-semibold border border-amber-300 dark:border-amber-800">
                 350W Bogotá
               </span>
             </button>
@@ -226,11 +226,11 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="Fijar en 1000 W (Tope máximo Ley 2486)"
             >
               <span class="w-0.5 h-1.5 bg-rose-500"></span>
-              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-mono font-semibold border border-rose-300 dark:border-rose-800">
+              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800">
                 1000W Límite Ley
               </span>
             </button>
-            <span class="absolute right-0 top-0.5 font-mono text-slate-400">3000W</span>
+            <span class="absolute right-0 top-0.5 text-slate-400">3000W</span>
           </div>
           <p id="power-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
@@ -249,9 +249,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="120"
                 step="1"
                 aria-label="Peso del vehículo en kilogramos"
-                class="w-20 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
+                class="w-20 px-2 py-1 text-right text-xs font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">kg</span>
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">kg</span>
             </div>
           </div>
 
@@ -267,7 +267,7 @@ export function mountVehicleForm(container, initialState, onChange) {
 
           <!-- Marca de referencia legal (60kg) -->
           <div class="relative h-7 mt-1.5 text-[10px] select-none">
-            <span class="absolute left-0 top-0.5 font-mono text-slate-400">5 kg</span>
+            <span class="absolute left-0 top-0.5 text-slate-400">5 kg</span>
             <button
               type="button"
               data-jump-field="weightKg"
@@ -277,11 +277,11 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="Fijar en 60 kg (Tope máximo Ley 2486)"
             >
               <span class="w-0.5 h-1.5 bg-rose-500"></span>
-              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-mono font-semibold border border-rose-300 dark:border-rose-800">
+              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800">
                 60 kg Límite Ley
               </span>
             </button>
-            <span class="absolute right-0 top-0.5 font-mono text-slate-400">120 kg</span>
+            <span class="absolute right-0 top-0.5 text-slate-400">120 kg</span>
           </div>
           <p id="weight-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
@@ -300,9 +300,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="80"
                 step="1"
                 aria-label="Velocidad máxima en kilómetros por hora"
-                class="w-20 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
+                class="w-20 px-2 py-1 text-right text-xs font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">km/h</span>
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">km/h</span>
             </div>
           </div>
 
@@ -318,7 +318,7 @@ export function mountVehicleForm(container, initialState, onChange) {
 
           <!-- Marcas de referencia técnica (25 km/h y 40 km/h) -->
           <div class="relative h-7 mt-1.5 text-[10px] select-none">
-            <span class="absolute left-0 top-0.5 font-mono text-slate-400">15</span>
+            <span class="absolute left-0 top-0.5 text-slate-400">15</span>
             <button
               type="button"
               data-jump-field="maxSpeedKmh"
@@ -328,7 +328,7 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="Fijar en 25 km/h (Velocidad máxima permitida en ciclorruta)"
             >
               <span class="w-0.5 h-1.5 bg-emerald-600"></span>
-              <span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 font-mono font-semibold border border-emerald-300 dark:border-emerald-800">
+              <span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-800">
                 25 Ciclorruta
               </span>
             </button>
@@ -341,11 +341,11 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="Fijar en 40 km/h (Tope máximo de diseño Ley 2486)"
             >
               <span class="w-0.5 h-1.5 bg-rose-500"></span>
-              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-mono font-semibold border border-rose-300 dark:border-rose-800">
+              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800">
                 40 km/h Límite Ley
               </span>
             </button>
-            <span class="absolute right-0 top-0.5 font-mono text-slate-400">80 km/h</span>
+            <span class="absolute right-0 top-0.5 text-slate-400">80 km/h</span>
           </div>
           <p id="speed-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
@@ -364,7 +364,7 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="80"
                 step="1"
                 aria-label="Edad del conductor en años"
-                class="w-20 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
+                class="w-20 px-2 py-1 text-right text-xs font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
               <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">años</span>
             </div>
@@ -382,7 +382,7 @@ export function mountVehicleForm(container, initialState, onChange) {
 
           <!-- Marcas de referencia de edad legal (12 y 16 años) -->
           <div class="relative h-7 mt-1.5 text-[10px] select-none">
-            <span class="absolute left-0 top-0.5 font-mono text-slate-400">8</span>
+            <span class="absolute left-0 top-0.5 text-slate-400">8</span>
             <button
               type="button"
               data-jump-field="driverAge"
@@ -392,7 +392,7 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="12 años: Edad mínima legal en ciclorruta"
             >
               <span class="w-0.5 h-1.5 bg-amber-500"></span>
-              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 font-mono font-semibold border border-amber-300 dark:border-amber-800">
+              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 font-semibold border border-amber-300 dark:border-amber-800">
                 12a Ciclorruta
               </span>
             </button>
@@ -405,11 +405,11 @@ export function mountVehicleForm(container, initialState, onChange) {
               title="16 años: Vía vehicular urbana o Licencia A1"
             >
               <span class="w-0.5 h-1.5 bg-emerald-600"></span>
-              <span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 font-mono font-semibold border border-emerald-300 dark:border-emerald-800">
+              <span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-800">
                 16a Vía/A1
               </span>
             </button>
-            <span class="absolute right-0 top-0.5 font-mono text-slate-400">80</span>
+            <span class="absolute right-0 top-0.5 text-slate-400">80</span>
           </div>
           <p id="age-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>

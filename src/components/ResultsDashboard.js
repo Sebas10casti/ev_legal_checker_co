@@ -108,7 +108,7 @@ export function renderResultsDashboard(container, evaluation) {
                 >
                   ${isVelmpu ? 'Categoría VELMPU (Exento de trámites)' : 'Categoría Ciclomotor (Requiere trámites)'}
                 </span>
-                <span class="text-xs font-mono font-medium text-slate-500 dark:text-slate-400">
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
                   ${vehicleMeta.label} — ${input.powerWatts}W / ${input.weightKg}kg / ${input.maxSpeedKmh}km/h
                 </span>
               </div>
@@ -277,7 +277,7 @@ export function renderResultsDashboard(container, evaluation) {
                       ${
                         road.maxSpeedKmh > 0
                           ? `
-                        <span class="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+                        <span class="text-xs font-bold px-1.5 py-0.5 rounded bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
                           ≤ ${road.maxSpeedKmh} km/h
                         </span>
                       `
@@ -363,7 +363,7 @@ export function renderResultsDashboard(container, evaluation) {
                 </p>
 
                 <div class="pt-1 flex flex-wrap gap-1.5 text-[11px] font-semibold">
-                  <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-mono">
+                  <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 ">
                     ${isVelmpu ? 'Norma: NTC 5239 / EN 1078' : 'Norma: ECE 22.06 / DOT / NTC 4533'}
                   </span>
                   <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
@@ -417,11 +417,11 @@ export function renderResultsDashboard(container, evaluation) {
               <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Régimen sancionatorio y causales de inmovilización
               </h3>
-              <p class="text-xs font-mono text-slate-500 dark:text-slate-400">
+              <p class="text-xs text-slate-500 dark:text-slate-400">
                 ${sanctions.categoryCode}
               </p>
             </div>
-            <span class="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+            <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
               Multa estimada: ${sanctions.fineLabel}
             </span>
           </div>

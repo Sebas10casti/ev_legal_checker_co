@@ -1,8 +1,7 @@
 /**
  * @fileoverview Componente interactivo de configuración del vehículo y del conductor (Columna Izquierda).
- * Incluye tarjetas de selección de tipo de vehículo, sliders sincronizados con inputs numéricos,
- * marcas visuales en los umbrales legales (350W, 1000W, 60kg, 25km/h, 40km/h, 12 y 16 años)
- * y casos rápidos preconfigurados.
+ * Incluye tarjetas táctiles de selección de vehículo, sliders de calibración con umbrales legales
+ * (350W Bogotá, 1000W Ley 2486, 60kg, 25km/h, 40km/h, 12 y 16 años) y perfiles rápidos de prueba.
  */
 
 import {
@@ -16,7 +15,7 @@ import { ICONS } from './icons.js';
 export const QUICK_PRESETS = [
   {
     id: 'scooter_std',
-    label: 'Patineta Urbana (500W)',
+    label: 'Patineta estándar (500W)',
     values: {
       vehicleType: VEHICLE_TYPES.SCOOTER,
       powerWatts: 500,
@@ -28,7 +27,7 @@ export const QUICK_PRESETS = [
   },
   {
     id: 'ebike_road',
-    label: 'Bici Eléctrica (350W)',
+    label: 'Bici asistida (350W)',
     values: {
       vehicleType: VEHICLE_TYPES.EBIKE,
       powerWatts: 350,
@@ -40,7 +39,7 @@ export const QUICK_PRESETS = [
   },
   {
     id: 'scooter_pro',
-    label: 'Patineta Potente (1200W)',
+    label: 'Patineta potente (1200W)',
     values: {
       vehicleType: VEHICLE_TYPES.SCOOTER,
       powerWatts: 1200,
@@ -52,7 +51,7 @@ export const QUICK_PRESETS = [
   },
   {
     id: 'moped_vespa',
-    label: 'Moto / Ciclomotor',
+    label: 'Ciclomotor eléctrico',
     values: {
       vehicleType: VEHICLE_TYPES.MOPED,
       powerWatts: 1500,
@@ -64,7 +63,7 @@ export const QUICK_PRESETS = [
   },
   {
     id: 'minor_14',
-    label: 'Joven 14 años (VELMPU)',
+    label: 'Conductor menor (14 años)',
     values: {
       vehicleType: VEHICLE_TYPES.SCOOTER,
       powerWatts: 350,
@@ -93,40 +92,39 @@ export function mountVehicleForm(container, initialState, onChange) {
   const pos16Age = calcPercent(16, 8, 80);
 
   container.innerHTML = `
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 sm:p-6 transition-colors">
-      <!-- Encabezado de tarjeta -->
-      <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100 dark:border-slate-800">
+    <div class="bg-white dark:bg-[#111927] rounded-xl border border-slate-300/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs transition-colors">
+      <!-- Encabezado de sección de controles -->
+      <div class="flex items-center justify-between gap-3 pb-3.5 mb-5 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-sm font-extrabold">1</span>
-            Datos del Vehículo y Conductor
+          <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            Parámetros del vehículo y conductor
           </h2>
-          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Ajusta los controles para evaluar tu clasificación legal en tiempo real.
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Modifica las variables para verificar la clasificación legal al instante.
           </p>
         </div>
         <button
           type="button"
           id="btn-reset-form"
-          class="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           title="Restablecer valores por defecto"
         >
           Restablecer
         </button>
       </div>
 
-      <!-- Perfiles Rápidos -->
-      <div class="mb-6">
-        <span class="block text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
-          Ejemplos rápidos de prueba:
-        </span>
+      <!-- Perfiles rápidos de referencia -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+          Perfiles de referencia rápida:
+        </label>
         <div class="flex flex-wrap gap-1.5" id="preset-buttons-container">
           ${QUICK_PRESETS.map(
             (preset) => `
             <button
               type="button"
               data-preset-id="${preset.id}"
-              class="preset-btn text-xs px-2.5 py-1.5 rounded-lg font-medium border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-all cursor-pointer"
+              class="preset-btn text-xs px-2.5 py-1.5 rounded-lg font-medium border border-slate-300 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-emerald-600 dark:hover:border-emerald-500 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors cursor-pointer"
             >
               ${preset.label}
             </button>
@@ -135,13 +133,13 @@ export function mountVehicleForm(container, initialState, onChange) {
         </div>
       </div>
 
-      <form id="ev-legal-form" class="space-y-6" novalidate>
-        <!-- 1. Tipo de Vehículo -->
+      <form id="ev-legal-form" class="space-y-5" novalidate>
+        <!-- Selector de Tipo de Vehículo -->
         <fieldset>
-          <legend class="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2.5">
-            1. Tipo de vehículo eléctrico
+          <legend class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+            Tipo de vehículo
           </legend>
-          <div class="grid grid-cols-2 gap-2.5 sm:gap-3" role="radiogroup" aria-label="Tipo de vehículo eléctrico">
+          <div class="grid grid-cols-2 gap-2 sm:gap-2.5" role="radiogroup" aria-label="Tipo de vehículo eléctrico">
             ${Object.values(VEHICLE_TYPE_METADATA)
               .map(
                 (type) => `
@@ -150,20 +148,20 @@ export function mountVehicleForm(container, initialState, onChange) {
                 role="radio"
                 aria-checked="false"
                 data-vehicle-type="${type.id}"
-                class="vehicle-type-card group relative flex flex-col items-start p-3 sm:p-3.5 rounded-xl border-2 text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                class="vehicle-type-card group relative flex flex-col items-start p-3 rounded-lg border text-left transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-emerald-600"
               >
-                <div class="flex items-center justify-between w-full mb-1.5">
-                  <span class="vehicle-icon p-2 rounded-lg transition-colors">
+                <div class="flex items-center justify-between w-full mb-1">
+                  <span class="vehicle-icon p-1.5 rounded-md transition-colors">
                     ${ICONS[type.id]}
                   </span>
-                  <span class="vehicle-radio-dot w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors">
-                    <span class="w-2 h-2 rounded-full bg-current opacity-0 transition-opacity"></span>
+                  <span class="vehicle-radio-dot w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors">
+                    <span class="w-1.5 h-1.5 rounded-full bg-current opacity-0 transition-opacity"></span>
                   </span>
                 </div>
-                <span class="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                <span class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight">
                   ${type.label}
                 </span>
-                <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
                   ${type.shortDesc}
                 </span>
               </button>
@@ -173,13 +171,13 @@ export function mountVehicleForm(container, initialState, onChange) {
           </div>
         </fieldset>
 
-        <!-- 2. Potencia Nominal del Motor (W) -->
-        <div class="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800">
+        <!-- Potencia Nominal del Motor (W) -->
+        <div class="p-3.5 sm:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <label for="input-power-num" class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              2. Potencia nominal del motor
+            <label for="input-power-num" class="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Potencia nominal del motor
             </label>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1">
               <input
                 id="input-power-num"
                 type="number"
@@ -187,9 +185,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="3000"
                 step="10"
                 aria-label="Potencia nominal en Vatios"
-                class="w-24 px-2.5 py-1 text-right text-sm font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="w-24 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">W</span>
+              <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">W</span>
             </div>
           </div>
 
@@ -200,22 +198,22 @@ export function mountVehicleForm(container, initialState, onChange) {
             max="3000"
             step="10"
             aria-label="Deslizador de potencia nominal en Vatios"
-            class="w-full accent-emerald-600 cursor-pointer"
+            class="w-full accent-emerald-600"
           />
 
-          <!-- Marcas de referencia (350W y 1000W) -->
-          <div class="relative h-9 mt-1 text-[11px] select-none">
-            <span class="absolute left-0 top-1 text-slate-400">100W</span>
+          <!-- Marcas de referencia técnica (350W y 1000W) -->
+          <div class="relative h-7 mt-1.5 text-[10px] select-none">
+            <span class="absolute left-0 top-0.5 font-mono text-slate-400">100W</span>
             <button
               type="button"
               data-jump-field="powerWatts"
               data-jump-value="350"
               style="left: ${pos350W}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Haz clic para fijar en 350 W (Alerta Bogotá)"
+              title="Fijar en 350 W (Umbral Bogotá ciclorrutas)"
             >
-              <span class="w-0.5 h-2 bg-amber-500"></span>
-              <span class="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/90 text-amber-800 dark:text-amber-300 font-semibold border border-amber-300 dark:border-amber-800 group-hover:scale-105 transition-transform">
+              <span class="w-0.5 h-1.5 bg-amber-500"></span>
+              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 font-mono font-semibold border border-amber-300 dark:border-amber-800">
                 350W Bogotá
               </span>
             </button>
@@ -225,25 +223,25 @@ export function mountVehicleForm(container, initialState, onChange) {
               data-jump-value="1000"
               style="left: ${pos1000W}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Haz clic para fijar en 1000 W (Tope Ley 2486)"
+              title="Fijar en 1000 W (Tope máximo Ley 2486)"
             >
-              <span class="w-0.5 h-2 bg-rose-500"></span>
-              <span class="px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800 group-hover:scale-105 transition-transform">
+              <span class="w-0.5 h-1.5 bg-rose-500"></span>
+              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-mono font-semibold border border-rose-300 dark:border-rose-800">
                 1000W Límite Ley
               </span>
             </button>
-            <span class="absolute right-0 top-1 text-slate-400">3000W</span>
+            <span class="absolute right-0 top-0.5 font-mono text-slate-400">3000W</span>
           </div>
           <p id="power-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
 
-        <!-- 3. Peso del Vehículo (kg) -->
-        <div class="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800">
+        <!-- Peso del Vehículo (kg) -->
+        <div class="p-3.5 sm:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <label for="input-weight-num" class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              3. Peso del vehículo (con batería)
+            <label for="input-weight-num" class="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Peso en orden de marcha (con batería)
             </label>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1">
               <input
                 id="input-weight-num"
                 type="number"
@@ -251,9 +249,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="120"
                 step="1"
                 aria-label="Peso del vehículo en kilogramos"
-                class="w-20 px-2.5 py-1 text-right text-sm font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="w-20 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">kg</span>
+              <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">kg</span>
             </div>
           </div>
 
@@ -264,37 +262,37 @@ export function mountVehicleForm(container, initialState, onChange) {
             max="120"
             step="1"
             aria-label="Deslizador de peso del vehículo en kilogramos"
-            class="w-full accent-emerald-600 cursor-pointer"
+            class="w-full accent-emerald-600"
           />
 
-          <!-- Marca de referencia (60kg) -->
-          <div class="relative h-9 mt-1 text-[11px] select-none">
-            <span class="absolute left-0 top-1 text-slate-400">5 kg</span>
+          <!-- Marca de referencia legal (60kg) -->
+          <div class="relative h-7 mt-1.5 text-[10px] select-none">
+            <span class="absolute left-0 top-0.5 font-mono text-slate-400">5 kg</span>
             <button
               type="button"
               data-jump-field="weightKg"
               data-jump-value="60"
               style="left: ${pos60Kg}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Haz clic para fijar en 60 kg (Tope Ley 2486)"
+              title="Fijar en 60 kg (Tope máximo Ley 2486)"
             >
-              <span class="w-0.5 h-2 bg-rose-500"></span>
-              <span class="px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800 group-hover:scale-105 transition-transform">
+              <span class="w-0.5 h-1.5 bg-rose-500"></span>
+              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-mono font-semibold border border-rose-300 dark:border-rose-800">
                 60 kg Límite Ley
               </span>
             </button>
-            <span class="absolute right-0 top-1 text-slate-400">120 kg</span>
+            <span class="absolute right-0 top-0.5 font-mono text-slate-400">120 kg</span>
           </div>
           <p id="weight-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
 
-        <!-- 4. Velocidad Máxima por Diseño (km/h) -->
-        <div class="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800">
+        <!-- Velocidad Máxima por Diseño (km/h) -->
+        <div class="p-3.5 sm:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <label for="input-speed-num" class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              4. Velocidad máxima por diseño
+            <label for="input-speed-num" class="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Velocidad máxima por diseño
             </label>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1">
               <input
                 id="input-speed-num"
                 type="number"
@@ -302,9 +300,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="80"
                 step="1"
                 aria-label="Velocidad máxima en kilómetros por hora"
-                class="w-20 px-2.5 py-1 text-right text-sm font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="w-20 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">km/h</span>
+              <span class="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">km/h</span>
             </div>
           </div>
 
@@ -315,22 +313,22 @@ export function mountVehicleForm(container, initialState, onChange) {
             max="80"
             step="1"
             aria-label="Deslizador de velocidad máxima en km/h"
-            class="w-full accent-emerald-600 cursor-pointer"
+            class="w-full accent-emerald-600"
           />
 
-          <!-- Marcas de referencia (25 km/h y 40 km/h) -->
-          <div class="relative h-9 mt-1 text-[11px] select-none">
-            <span class="absolute left-0 top-1 text-slate-400">15</span>
+          <!-- Marcas de referencia técnica (25 km/h y 40 km/h) -->
+          <div class="relative h-7 mt-1.5 text-[10px] select-none">
+            <span class="absolute left-0 top-0.5 font-mono text-slate-400">15</span>
             <button
               type="button"
               data-jump-field="maxSpeedKmh"
               data-jump-value="25"
               style="left: ${pos25Kmh}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Haz clic para fijar en 25 km/h (Velocidad máx. en ciclorruta)"
+              title="Fijar en 25 km/h (Velocidad máxima permitida en ciclorruta)"
             >
-              <span class="w-0.5 h-2 bg-emerald-500"></span>
-              <span class="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-800 group-hover:scale-105 transition-transform">
+              <span class="w-0.5 h-1.5 bg-emerald-600"></span>
+              <span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 font-mono font-semibold border border-emerald-300 dark:border-emerald-800">
                 25 Ciclorruta
               </span>
             </button>
@@ -340,25 +338,25 @@ export function mountVehicleForm(container, initialState, onChange) {
               data-jump-value="40"
               style="left: ${pos40Kmh}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Haz clic para fijar en 40 km/h (Tope Ley 2486)"
+              title="Fijar en 40 km/h (Tope máximo de diseño Ley 2486)"
             >
-              <span class="w-0.5 h-2 bg-rose-500"></span>
-              <span class="px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/90 text-rose-800 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800 group-hover:scale-105 transition-transform">
+              <span class="w-0.5 h-1.5 bg-rose-500"></span>
+              <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-mono font-semibold border border-rose-300 dark:border-rose-800">
                 40 km/h Límite Ley
               </span>
             </button>
-            <span class="absolute right-0 top-1 text-slate-400">80 km/h</span>
+            <span class="absolute right-0 top-0.5 font-mono text-slate-400">80 km/h</span>
           </div>
           <p id="speed-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
 
-        <!-- 5. Edad del Conductor (años) -->
-        <div class="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800">
+        <!-- Edad del Conductor (años) -->
+        <div class="p-3.5 sm:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <label for="input-age-num" class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              5. Edad del conductor
+            <label for="input-age-num" class="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Edad del conductor
             </label>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1">
               <input
                 id="input-age-num"
                 type="number"
@@ -366,9 +364,9 @@ export function mountVehicleForm(container, initialState, onChange) {
                 max="80"
                 step="1"
                 aria-label="Edad del conductor en años"
-                class="w-20 px-2.5 py-1 text-right text-sm font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="w-20 px-2 py-1 text-right text-xs font-mono font-bold rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
               />
-              <span class="text-xs font-bold text-slate-500 dark:text-slate-400">años</span>
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">años</span>
             </div>
           </div>
 
@@ -379,23 +377,23 @@ export function mountVehicleForm(container, initialState, onChange) {
             max="80"
             step="1"
             aria-label="Deslizador de edad del conductor"
-            class="w-full accent-emerald-600 cursor-pointer"
+            class="w-full accent-emerald-600"
           />
 
-          <!-- Marcas de referencia (12 y 16 años) -->
-          <div class="relative h-9 mt-1 text-[11px] select-none">
-            <span class="absolute left-0 top-1 text-slate-400">8</span>
+          <!-- Marcas de referencia de edad legal (12 y 16 años) -->
+          <div class="relative h-7 mt-1.5 text-[10px] select-none">
+            <span class="absolute left-0 top-0.5 font-mono text-slate-400">8</span>
             <button
               type="button"
               data-jump-field="driverAge"
               data-jump-value="12"
               style="left: ${pos12Age}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="12 años: Edad mínima en ciclorruta"
+              title="12 años: Edad mínima legal en ciclorruta"
             >
-              <span class="w-0.5 h-2 bg-amber-500"></span>
-              <span class="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-950/90 text-amber-800 dark:text-amber-300 font-semibold border border-amber-300 dark:border-amber-800">
-                12a
+              <span class="w-0.5 h-1.5 bg-amber-500"></span>
+              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 font-mono font-semibold border border-amber-300 dark:border-amber-800">
+                12a Ciclorruta
               </span>
             </button>
             <button
@@ -404,36 +402,36 @@ export function mountVehicleForm(container, initialState, onChange) {
               data-jump-value="16"
               style="left: ${pos16Age}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="16 años: Vía urbana / Licencia A1"
+              title="16 años: Vía vehicular urbana o Licencia A1"
             >
-              <span class="w-0.5 h-2 bg-emerald-500"></span>
-              <span class="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-800">
+              <span class="w-0.5 h-1.5 bg-emerald-600"></span>
+              <span class="px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 font-mono font-semibold border border-emerald-300 dark:border-emerald-800">
                 16a Vía/A1
               </span>
             </button>
-            <span class="absolute right-0 top-1 text-slate-400">80 años</span>
+            <span class="absolute right-0 top-0.5 font-mono text-slate-400">80</span>
           </div>
           <p id="age-status-hint" class="text-xs mt-1 font-medium"></p>
         </div>
 
-        <!-- 6. Toggle Bogotá D.C. -->
-        <div class="p-4 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60">
+        <!-- Toggle Bogotá D.C. -->
+        <div class="p-3.5 sm:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
           <label for="input-is-bogota" class="flex items-start justify-between gap-3 cursor-pointer select-none">
-            <div>
-              <span class="block text-sm font-bold text-slate-900 dark:text-white">
-                6. ¿Circula principalmente en Bogotá D.C.?
+            <div class="space-y-0.5">
+              <span class="block text-xs font-bold text-slate-900 dark:text-white">
+                Circulación en Bogotá D.C.
               </span>
-              <span class="block text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                Activa avisos sobre reglamentación distrital de la Secretaría de Movilidad (restricciones en ciclorrutas a &gt;350 W o sin pedaleo asistido).
+              <span class="block text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Aplica la reglamentación preventiva de la Secretaría de Movilidad de Bogotá (restricciones en ciclorrutas para vehículos con motor mayor a 350 W o sin pedaleo asistido).
               </span>
             </div>
-            <div class="relative inline-flex items-center shrink-0 mt-1">
+            <div class="relative inline-flex items-center shrink-0 mt-0.5">
               <input
                 id="input-is-bogota"
                 type="checkbox"
                 class="sr-only peer"
               />
-              <div class="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              <div class="w-10 h-5 bg-slate-300 dark:bg-slate-700 peer-focus-visible:outline-2 peer-focus-visible:outline-emerald-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-700"></div>
             </div>
           </label>
         </div>
@@ -481,19 +479,19 @@ export function mountVehicleForm(container, initialState, onChange) {
 
       if (isSelected) {
         card.className =
-          'vehicle-type-card group relative flex flex-col items-start p-3 sm:p-3.5 rounded-xl border-2 text-left transition-all cursor-pointer border-emerald-600 dark:border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30 shadow-xs';
+          'vehicle-type-card group relative flex flex-col items-start p-3 rounded-lg border-2 text-left transition-colors cursor-pointer border-emerald-600 dark:border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/30';
         iconBox.className =
-          'vehicle-icon p-2 rounded-lg transition-colors bg-emerald-600 text-white';
+          'vehicle-icon p-1.5 rounded-md transition-colors bg-emerald-700 text-white';
         radioDot.className =
-          'vehicle-radio-dot w-4 h-4 rounded-full border-2 flex items-center justify-center border-emerald-600 dark:border-emerald-400 text-emerald-600 dark:text-emerald-400';
+          'vehicle-radio-dot w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center border-emerald-700 dark:border-emerald-400 text-emerald-700 dark:text-emerald-400';
         innerDot.classList.remove('opacity-0');
       } else {
         card.className =
-          'vehicle-type-card group relative flex flex-col items-start p-3 sm:p-3.5 rounded-xl border-2 text-left transition-all cursor-pointer border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700';
+          'vehicle-type-card group relative flex flex-col items-start p-3 rounded-lg border text-left transition-colors cursor-pointer border-slate-300/80 dark:border-slate-800 bg-white dark:bg-[#111927] hover:border-slate-400 dark:hover:border-slate-700';
         iconBox.className =
-          'vehicle-icon p-2 rounded-lg transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+          'vehicle-icon p-1.5 rounded-md transition-colors bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
         radioDot.className =
-          'vehicle-radio-dot w-4 h-4 rounded-full border-2 flex items-center justify-center border-slate-300 dark:border-slate-600 text-transparent';
+          'vehicle-radio-dot w-3.5 h-3.5 rounded-full border flex items-center justify-center border-slate-400 dark:border-slate-600 text-transparent';
         innerDot.classList.add('opacity-0');
       }
     });
@@ -515,44 +513,44 @@ export function mountVehicleForm(container, initialState, onChange) {
 
     // 3. Mensajes de ayuda contextual en cada slider
     if (state.powerWatts > LEGAL_LIMITS.MAX_VELMPU_POWER_WATTS) {
-      powerHint.textContent = `Supera los 1000 W (+${state.powerWatts - 1000} W): Pasa a categoría Ciclomotor (Res. 160 de 2017).`;
-      powerHint.className = 'text-xs mt-1 font-semibold text-rose-600 dark:text-rose-400';
+      powerHint.textContent = `Supera el límite legal de 1000 W (+${state.powerWatts - 1000} W): Pasa a categoría Ciclomotor (Res. 160 de 2017).`;
+      powerHint.className = 'text-xs mt-1 font-semibold text-rose-700 dark:text-rose-400';
     } else if (state.isBogota && state.powerWatts > LEGAL_LIMITS.BOGOTA_CICLORRUTA_WARNING_WATTS) {
-      powerHint.textContent = `Dentro de Ley 2486 (≤ 1000 W), pero supera 350 W (Alerta Bogotá en ciclorrutas).`;
-      powerHint.className = 'text-xs mt-1 font-semibold text-amber-600 dark:text-amber-400';
+      powerHint.textContent = `Cumple la Ley 2486 (≤ 1000 W), pero excede 350 W (Aviso preventivo en ciclorrutas de Bogotá).`;
+      powerHint.className = 'text-xs mt-1 font-semibold text-amber-700 dark:text-amber-400';
     } else {
-      powerHint.textContent = `Cumple límite nacional de potencia VELMPU (≤ 1000 W).`;
-      powerHint.className = 'text-xs mt-1 font-medium text-emerald-700 dark:text-emerald-400';
+      powerHint.textContent = `Cumple el límite legal nacional de potencia VELMPU (≤ 1000 W).`;
+      powerHint.className = 'text-xs mt-1 font-medium text-emerald-800 dark:text-emerald-400';
     }
 
     if (state.weightKg > LEGAL_LIMITS.MAX_VELMPU_WEIGHT_KG) {
-      weightHint.textContent = `Supera los 60 kg (+${state.weightKg - 60} kg): Clasifica como Ciclomotor.`;
-      weightHint.className = 'text-xs mt-1 font-semibold text-rose-600 dark:text-rose-400';
+      weightHint.textContent = `Supera el límite de 60 kg (+${state.weightKg - 60} kg): Se clasifica como Ciclomotor.`;
+      weightHint.className = 'text-xs mt-1 font-semibold text-rose-700 dark:text-rose-400';
     } else {
-      weightHint.textContent = `Cumple límite de peso para vehículo liviano (≤ 60 kg).`;
-      weightHint.className = 'text-xs mt-1 font-medium text-emerald-700 dark:text-emerald-400';
+      weightHint.textContent = `Cumple el peso máximo legal para vehículo liviano (≤ 60 kg).`;
+      weightHint.className = 'text-xs mt-1 font-medium text-emerald-800 dark:text-emerald-400';
     }
 
     if (state.maxSpeedKmh > LEGAL_LIMITS.MAX_VELMPU_DESIGN_SPEED_KMH) {
-      speedHint.textContent = `Supera los 40 km/h por diseño: Clasifica como Ciclomotor.`;
-      speedHint.className = 'text-xs mt-1 font-semibold text-rose-600 dark:text-rose-400';
+      speedHint.textContent = `Supera los 40 km/h por diseño: Se clasifica como Ciclomotor.`;
+      speedHint.className = 'text-xs mt-1 font-semibold text-rose-700 dark:text-rose-400';
     } else if (state.maxSpeedKmh > LEGAL_LIMITS.MAX_CICLORRUTA_OPERATIONAL_SPEED_KMH) {
-      speedHint.textContent = `Cumple Ley 2486 (≤ 40 km/h). Recuerda no pasar de 25 km/h en ciclorruta.`;
-      speedHint.className = 'text-xs mt-1 font-medium text-emerald-700 dark:text-emerald-400';
+      speedHint.textContent = `Cumple la velocidad de diseño (≤ 40 km/h). En ciclorruta el límite operativo es 25 km/h.`;
+      speedHint.className = 'text-xs mt-1 font-medium text-emerald-800 dark:text-emerald-400';
     } else {
-      speedHint.textContent = `Cumple velocidad de diseño (≤ 40 km/h) y tope de ciclorruta (≤ 25 km/h).`;
-      speedHint.className = 'text-xs mt-1 font-medium text-emerald-700 dark:text-emerald-400';
+      speedHint.textContent = `Cumple la velocidad de diseño (≤ 40 km/h) y el límite de ciclorruta (≤ 25 km/h).`;
+      speedHint.className = 'text-xs mt-1 font-medium text-emerald-800 dark:text-emerald-400';
     }
 
     if (state.driverAge < LEGAL_LIMITS.MIN_AGE_ABSOLUTE) {
-      ageHint.textContent = `Menor de 12 años: Prohibido conducir en infraestructura pública.`;
-      ageHint.className = 'text-xs mt-1 font-semibold text-rose-600 dark:text-rose-400';
+      ageHint.textContent = `Menor de 12 años: Prohibido transitar en vías públicas (causal de inmovilización).`;
+      ageHint.className = 'text-xs mt-1 font-semibold text-rose-700 dark:text-rose-400';
     } else if (state.driverAge < LEGAL_LIMITS.MIN_AGE_FULL_ROAD) {
-      ageHint.textContent = `Entre 12 y 15 años: Solo ciclorruta en VELMPU (Prohibido calzada y Ciclomotor).`;
-      ageHint.className = 'text-xs mt-1 font-semibold text-amber-600 dark:text-amber-400';
+      ageHint.textContent = `Entre 12 y 15 años: Circulación permitida únicamente en ciclorrutas para VELMPU (prohibido calzada vehicular).`;
+      ageHint.className = 'text-xs mt-1 font-semibold text-amber-700 dark:text-amber-400';
     } else {
-      ageHint.textContent = `Mayor de 16 años: Edad habilitada para circular según categoría.`;
-      ageHint.className = 'text-xs mt-1 font-medium text-emerald-700 dark:text-emerald-400';
+      ageHint.textContent = `16 años o más: Edad habilitada para circular en calzada o tramitar licencia A1/A2 si aplica.`;
+      ageHint.className = 'text-xs mt-1 font-medium text-emerald-800 dark:text-emerald-400';
     }
   }
 

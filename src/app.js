@@ -80,7 +80,7 @@ function initThemeToggle() {
   function syncThemeUI() {
     const isDark = document.documentElement.classList.contains('dark');
     if (themeLabel) {
-      themeLabel.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+      themeLabel.textContent = isDark ? 'Modo claro' : 'Modo oscuro';
     }
     toggleBtn.setAttribute('aria-pressed', String(isDark));
   }

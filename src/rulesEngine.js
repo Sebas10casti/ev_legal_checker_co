@@ -3,6 +3,14 @@
  * Comparativa: Ley 2486 de 2025 (VELMPU) vs. Resolución 160 de 2017 / Código Nacional de Tránsito (Ciclomotores).
  *
  * Módulo de funciones puras, sin dependencias de DOM, 100% testeable.
+ *
+ * Referencias a la Ley 2486 de 2025 usadas en este módulo:
+ * - Art. 2: Definición de VELMPU (potencia nominal ≤ 1000 W, uso individual).
+ * - Art. 3 (nuevo Art. 96-1 Ley 769): Normas específicas de circulación (numerales 1 a 14 + parágrafo).
+ * - Art. 4 (literal G del Art. 131 Ley 769): Infracciones G.1 a G.14, multa de 6 SMLDV.
+ * - Art. 7: Delegación al Ministerio de Transporte (especificaciones técnicas, cascos, prendas, pasajeros).
+ * - Art. 15: Exención de matrícula, SOAT y licencia para VELMPU y para cualquier vehículo eléctrico
+ *   con peso ≤ 60 kg (incluida batería) o que, pesando más, no pueda superar 40 km/h.
  */
 
 export const LEGAL_LIMITS = Object.freeze({
@@ -10,12 +18,17 @@ export const LEGAL_LIMITS = Object.freeze({
   BOGOTA_CICLORRUTA_WARNING_WATTS: 350,
   MAX_VELMPU_WEIGHT_KG: 60,
   MAX_VELMPU_DESIGN_SPEED_KMH: 40,
+  // Art. 15 Ley 2486: umbrales de exención de documentos (criterios alternativos, no acumulativos).
+  MAX_EXEMPT_WEIGHT_KG: 60,
+  MAX_EXEMPT_SPEED_KMH: 40,
   MAX_CICLORRUTA_OPERATIONAL_SPEED_KMH: 25,
   MAX_URBAN_ROAD_OPERATIONAL_SPEED_KMH: 40,
   MIN_AGE_ABSOLUTE: 12,
   MIN_AGE_FULL_ROAD: 16,
-  REFLECTIVE_START_HOUR: '6:00 p.m.',
-  REFLECTIVE_END_HOUR: '6:00 a.m.',
+  // Art. 96-1 num. 2: máximo de personas movilizadas simultáneamente (salvo vehículo diseñado para ello).
+  MAX_VELMPU_PERSONS: 1,
+  REFLECTIVE_START_HOUR: '18:00',
+  REFLECTIVE_END_HOUR: '6:00',
   VELMPU_FINE_SMLDV: 6,
   CICLOMOTOR_FINE_D_SMLDV: 30,
   CICLOMOTOR_FINE_C_SMLDV: 15,
@@ -104,39 +117,85 @@ export function sanitizeInput(rawInput = {}) {
 }
 
 /**
+ * Regla 1b: Exención de documentos (Art. 15 Ley 2486 de 2025)
+ * No se requiere ni puede exigirse matrícula, SOAT ni licencia de conducción a:
+ *   - Los VELMPU, o
+ *   - Cualquier vehículo eléctrico con peso (incluida batería) ≤ 60 kg, o
+ *   - Cualquier vehículo eléctrico con peso > 60 kg que no pueda superar 40 km/h.
+ * Es independiente de la clasificación VELMPU (que gobierna las reglas de circulación).
+ */
+export function evaluateDocumentExemption(input, isVelmpu) {
+  const { weightKg, maxSpeedKmh } = sanitizeInput(input);
+
+  if (isVelmpu) {
+    return {
+      exempt: true,
+      basis: 'VELMPU',
+      reason:
+        'Art. 15 Ley 2486 de 2025: es un vehículo eléctrico liviano de movilidad personal urbana.',
+    };
+  }
+  if (weightKg <= LEGAL_LIMITS.MAX_EXEMPT_WEIGHT_KG) {
+    return {
+      exempt: true,
+      basis: 'WEIGHT',
+      reason: `Art. 15 Ley 2486 de 2025: vehículo eléctrico cuyo peso con batería (${weightKg} kg) no supera los ${LEGAL_LIMITS.MAX_EXEMPT_WEIGHT_KG} kg.`,
+    };
+  }
+  if (maxSpeedKmh <= LEGAL_LIMITS.MAX_EXEMPT_SPEED_KMH) {
+    return {
+      exempt: true,
+      basis: 'LOW_SPEED',
+      reason: `Art. 15 Ley 2486 de 2025: aunque pesa más de ${LEGAL_LIMITS.MAX_EXEMPT_WEIGHT_KG} kg, no puede desarrollar velocidades superiores a ${LEGAL_LIMITS.MAX_EXEMPT_SPEED_KMH} km/h (${maxSpeedKmh} km/h).`,
+    };
+  }
+  return {
+    exempt: false,
+    basis: null,
+    reason: `No aplica la exención del Art. 15 Ley 2486: pesa más de ${LEGAL_LIMITS.MAX_EXEMPT_WEIGHT_KG} kg (${weightKg} kg) y puede superar ${LEGAL_LIMITS.MAX_EXEMPT_SPEED_KMH} km/h (${maxSpeedKmh} km/h).`,
+  };
+}
+
+/**
  * Regla 1: Clasificación del Vehículo
  * - Categoría VELMPU (Ley 2486 de 2025):
  *   powerWatts <= 1000 AND weightKg <= 60 AND maxSpeedKmh <= 40 AND vehicleType !== 'moped'
+ *   Nota: la ley solo fija expresamente la potencia nominal (≤ 1000 W, Art. 2) y delega el resto de
+ *   especificaciones en el Ministerio de Transporte (Art. 7). Peso y velocidad se usan como criterio
+ *   conservador del validador, tomando los umbrales de "liviano o de baja velocidad" del Art. 15.
  * - Categoría Ciclomotor / Motocicleta Eléctrica (Resolución 160 de 2017):
  *   powerWatts > 1000 OR weightKg > 60 OR maxSpeedKmh > 40 OR vehicleType === 'moped'
+ * - La exención de documentos se evalúa aparte (Art. 15), ver evaluateDocumentExemption.
  */
 export function classifyVehicle(input) {
-  const { vehicleType, powerWatts, weightKg, maxSpeedKmh } = sanitizeInput(input);
+  const sanitized = sanitizeInput(input);
+  const { vehicleType, powerWatts, weightKg, maxSpeedKmh } = sanitized;
 
   const triggers = [];
 
   if (vehicleType === VEHICLE_TYPES.MOPED) {
     triggers.push({
       field: 'vehicleType',
-      reason: 'El tipo de vehículo seleccionado es Ciclomotor / Moto eléctrica / Scooter tipo Vespa.',
+      reason:
+        'El tipo de vehículo seleccionado es Ciclomotor / Moto eléctrica / Scooter tipo Vespa (no diseñado como vehículo de movilidad personal).',
     });
   }
   if (powerWatts > LEGAL_LIMITS.MAX_VELMPU_POWER_WATTS) {
     triggers.push({
       field: 'powerWatts',
-      reason: `La potencia (${powerWatts} W) supera el límite legal de ${LEGAL_LIMITS.MAX_VELMPU_POWER_WATTS} W de la Ley 2486.`,
+      reason: `La potencia nominal (${powerWatts} W) supera el límite de ${LEGAL_LIMITS.MAX_VELMPU_POWER_WATTS} W del Art. 2 de la Ley 2486.`,
     });
   }
   if (weightKg > LEGAL_LIMITS.MAX_VELMPU_WEIGHT_KG) {
     triggers.push({
       field: 'weightKg',
-      reason: `El peso con batería (${weightKg} kg) supera el tope de ${LEGAL_LIMITS.MAX_VELMPU_WEIGHT_KG} kg de la Ley 2486.`,
+      reason: `El peso con batería (${weightKg} kg) supera los ${LEGAL_LIMITS.MAX_VELMPU_WEIGHT_KG} kg que este validador usa como tope de vehículo liviano (umbral del Art. 15).`,
     });
   }
   if (maxSpeedKmh > LEGAL_LIMITS.MAX_VELMPU_DESIGN_SPEED_KMH) {
     triggers.push({
       field: 'maxSpeedKmh',
-      reason: `La velocidad máxima por diseño (${maxSpeedKmh} km/h) excede los ${LEGAL_LIMITS.MAX_VELMPU_DESIGN_SPEED_KMH} km/h permitidos para VELMPU.`,
+      reason: `La velocidad máxima por diseño (${maxSpeedKmh} km/h) supera los ${LEGAL_LIMITS.MAX_VELMPU_DESIGN_SPEED_KMH} km/h, el máximo permitido a un VELMPU en cualquier vía (Art. 96-1 num. 7).`,
     });
   }
 
@@ -147,34 +206,61 @@ export function classifyVehicle(input) {
     vehicleType !== VEHICLE_TYPES.MOPED;
 
   const category = isVelmpu ? CATEGORIES.VELMPU : CATEGORIES.CICLOMOTOR;
+  const documentExemption = evaluateDocumentExemption(sanitized, isVelmpu);
+  const isDocumentExempt = documentExemption.exempt;
+
+  let badgeTitle;
+  let legalFramework;
+  let summary;
+  let semaphore;
+
+  if (isVelmpu) {
+    semaphore = 'green';
+    badgeTitle = 'Vehículo Eléctrico Liviano (Ley 2486 de 2025)';
+    legalFramework = 'Amparado como VELMPU por la Ley 2486 de 2025';
+    summary =
+      'Cumple la potencia nominal máxima de 1000 W (Art. 2) y los criterios de vehículo liviano (≤ 60 kg, ≤ 40 km/h). No se le puede exigir matrícula, SOAT ni licencia de conducción (Art. 15).';
+  } else if (isDocumentExempt) {
+    semaphore = 'yellow';
+    badgeTitle = 'Ciclomotor Eléctrico Exento de Documentos (Art. 15 Ley 2486)';
+    legalFramework =
+      'Circulación regulada por la Resolución 160 de 2017 y el Código Nacional de Tránsito (Ley 769 de 2002); exento de matrícula, SOAT y licencia por el Art. 15 de la Ley 2486 de 2025';
+    summary = `No cumple los criterios de VELMPU, por lo que circula como ciclomotor (sin ciclo-infraestructura). Sin embargo, no se le puede exigir matrícula, SOAT ni licencia: ${documentExemption.reason}`;
+  } else {
+    semaphore = 'red';
+    badgeTitle = 'Ciclomotor / Moto Eléctrica (Requiere Papeles)';
+    legalFramework =
+      'Regulado por la Resolución 160 de 2017 y el Código Nacional de Tránsito (Ley 769 de 2002)';
+    summary =
+      'Supera los límites de vehículo liviano y no aplica la exención del Art. 15 de la Ley 2486 (pesa más de 60 kg y supera 40 km/h). Exige SOAT, matrícula (placa), RUNT y licencia de conducción.';
+  }
 
   return {
     category,
     isVelmpu,
     isCiclomotor: !isVelmpu,
-    semaphore: isVelmpu ? 'green' : 'red',
-    badgeTitle: isVelmpu
-      ? 'Vehículo Eléctrico Liviano (Ley 2486 de 2025)'
-      : 'Ciclomotor / Moto Eléctrica (Requiere Papeles)',
-    legalFramework: isVelmpu
-      ? 'Amparado como VELMPU por la Ley 2486 de 2025'
-      : 'Regulado por la Resolución 160 de 2017 y el Código Nacional de Tránsito (Ley 769 de 2002)',
-    summary: isVelmpu
-      ? 'Cumple todos los topes técnicos de Vehículo Eléctrico Liviano de Movilidad Personal Urbana (≤ 1000 W, ≤ 60 kg, ≤ 40 km/h). Está exento de SOAT, matrícula y licencia.'
-      : 'Supera los límites de vehículo liviano o corresponde a ciclomotor/moto eléctrica. Exige SOAT, matrícula (placa), RUNT y licencia de conducción.',
+    isDocumentExempt,
+    documentExemption,
+    semaphore,
+    badgeTitle,
+    legalFramework,
+    summary,
     triggers,
   };
 }
 
 /**
- * Regla 2: Validación de Edad del Conductor
+ * Regla 2: Validación de Edad del Conductor (Art. 96-1 num. 1 y parágrafo)
  * - < 12 años: Prohibido conducir en infraestructura pública (Causal de inmovilización).
  * - 12 a 15 años (< 16):
  *   - Si es VELMPU: Uso permitido exclusivamente en ciclo-infraestructura (ciclorrutas). Prohibido salir a vías vehiculares (Causal de inmovilización).
  *   - Si es Ciclomotor: Prohibido conducir (Edad mínima para licencia A1 es 16 años).
  * - >= 16 años: Edad habilitada para circular según las reglas de la categoría del vehículo.
+ * @param {number} driverAge
+ * @param {string} category
+ * @param {boolean} [isDocumentExempt] Si el vehículo está exento de licencia por el Art. 15 (ajusta los textos).
  */
-export function evaluateDriverAge(driverAge, category) {
+export function evaluateDriverAge(driverAge, category, isDocumentExempt = category === CATEGORIES.VELMPU) {
   const age = Number(driverAge);
   const isVelmpu = category === CATEGORIES.VELMPU;
 
@@ -187,10 +273,10 @@ export function evaluateDriverAge(driverAge, category) {
       semaphore: 'red',
       title: `Prohibido circular (${age} años — Menor de 12 años)`,
       description:
-        'Está estrictamente prohibido conducir este tipo de vehículos en infraestructura pública para menores de 12 años.',
+        'La edad mínima de conducción es de 16 años cumplidos (Art. 96-1 num. 1, Ley 2486). La única excepción —de 12 a 16 años, exclusivamente en ciclo-infraestructura— no cubre a menores de 12 años.',
       immobilizationRisk: true,
       immobilizationReason:
-        'Causal de inmovilización inmediata: Conductor menor de 12 años en infraestructura pública.',
+        'Causal de inmovilización: conductor por debajo de la edad mínima legal (menor de 12 años) en infraestructura pública.',
     };
   }
 
@@ -204,10 +290,10 @@ export function evaluateDriverAge(driverAge, category) {
         semaphore: 'yellow',
         title: `Circulación Restringida (${age} años — Entre 12 y 15 años)`,
         description:
-          'Uso permitido EXCLUSIVAMENTE en ciclo-infraestructura (ciclorrutas). Tiene estrictamente prohibido salir a vías vehiculares o calzada.',
+          'Uso permitido EXCLUSIVAMENTE en ciclo-infraestructura (Parágrafo del Art. 96-1, Ley 2486). Tiene prohibido salir a vías vehiculares o calzada.',
         immobilizationRisk: true,
         immobilizationReason:
-          'Causal de inmovilización inmediata si el menor de 16 años sale de la ciclorruta hacia la calzada vehicular.',
+          'Causal de inmovilización si el menor de 16 años sale de la ciclo-infraestructura hacia la calzada vehicular (Art. 96-1 num. 1).',
       };
     }
 
@@ -218,12 +304,26 @@ export function evaluateDriverAge(driverAge, category) {
       canDriveUrbanRoad: false,
       semaphore: 'red',
       title: `Prohibido conducir Ciclomotor (${age} años — Menor de 16 años)`,
-      description:
-        'No puede conducir ciclomotores ni motocicletas eléctricas. La edad mínima legal en Colombia para obtener licencia categoría A1 es 16 años cumplidos.',
+      description: isDocumentExempt
+        ? 'Este vehículo no es VELMPU, por lo que no aplica la excepción de 12 a 16 años en ciclo-infraestructura (Parágrafo del Art. 96-1). Aunque el Art. 15 lo exime de licencia, por seguridad este validador mantiene la edad mínima de 16 años.'
+        : 'No puede conducir ciclomotores ni motocicletas eléctricas. La edad mínima legal en Colombia para obtener licencia categoría A1 es 16 años cumplidos.',
       immobilizationRisk: true,
-      immobilizationReason:
-        'Causal de inmovilización y comparendo por conducir ciclomotor sin tener la edad mínima ni licencia A1/A2.',
+      immobilizationReason: isDocumentExempt
+        ? 'Riesgo de inmovilización: conductor menor de 16 años en un vehículo que no es VELMPU (no aplica la excepción de ciclo-infraestructura).'
+        : 'Causal de inmovilización y comparendo por conducir ciclomotor sin tener la edad mínima ni licencia A1/A2.',
     };
+  }
+
+  let description;
+  if (isVelmpu) {
+    description =
+      'Cumple la edad mínima de 16 años (Art. 96-1 num. 1) para circular por la ciclo-infraestructura y, cuando esta no exista o no sea transitable, por el carril derecho de las vías permitidas.';
+  } else if (isDocumentExempt) {
+    description =
+      'Cumple la edad mínima (16+ años) para circular por vías vehiculares. No se le puede exigir licencia de conducción para este vehículo (Art. 15, Ley 2486).';
+  } else {
+    description =
+      'Cumple la edad mínima (16+ años) para tramitar/portar licencia de conducción categoría A1 (o A2 a partir de 18 años) y circular por vías vehiculares.';
   }
 
   return {
@@ -233,23 +333,27 @@ export function evaluateDriverAge(driverAge, category) {
     canDriveUrbanRoad: true,
     semaphore: 'green',
     title: `Edad Habilitada (${age} años)`,
-    description: isVelmpu
-      ? 'Cumple la edad mínima (16+ años) para circular tanto en ciclorrutas como en el carril derecho de vías urbanas cuando no exista ciclorruta.'
-      : 'Cumple la edad mínima (16+ años) para tramitar/portar licencia de conducción categoría A1 (o A2 a partir de 18 años) y circular por vías vehiculares.',
+    description,
     immobilizationRisk: false,
     immobilizationReason: null,
   };
 }
 
 /**
- * Regla 3: Documentación Obligatoria
+ * Regla 3: Documentación Obligatoria (Art. 15 Ley 2486 de 2025)
+ * @param {string} category
+ * @param {boolean} [isExempt] Exención del Art. 15. Por defecto, solo los VELMPU se consideran exentos.
+ * @param {string|null} [exemptionReason] Fundamento de la exención para mostrar al usuario.
  */
-export function evaluateDocuments(category) {
-  const isVelmpu = category === CATEGORIES.VELMPU;
-
-  if (isVelmpu) {
+export function evaluateDocuments(
+  category,
+  isExempt = category === CATEGORIES.VELMPU,
+  exemptionReason = null
+) {
+  if (isExempt) {
     return {
       requiresPapers: false,
+      exemptionReason,
       items: [
         {
           id: 'soat',
@@ -257,7 +361,8 @@ export function evaluateDocuments(category) {
           required: false,
           badge: 'Exento',
           semaphore: 'green',
-          description: 'NO requiere SOAT (Exento expresamente por la Ley 2486 de 2025).',
+          description:
+            'NO se requiere ni puede exigirse SOAT (exento expresamente por el Art. 15 de la Ley 2486 de 2025).',
         },
         {
           id: 'matricula',
@@ -265,7 +370,8 @@ export function evaluateDocuments(category) {
           required: false,
           badge: 'Exento',
           semaphore: 'green',
-          description: 'NO requiere matrícula, placa ni inscripción de vehículo ante el RUNT.',
+          description:
+            'NO se requiere ni puede exigirse matrícula ante organismo de tránsito (Art. 15). En consecuencia, tampoco placa ni inscripción del vehículo ante el RUNT.',
         },
         {
           id: 'licencia',
@@ -273,7 +379,8 @@ export function evaluateDocuments(category) {
           required: false,
           badge: 'Exento',
           semaphore: 'green',
-          description: 'NO requiere licencia de conducción para operar dentro de los límites VELMPU.',
+          description:
+            'NO se requiere ni puede exigirse licencia de conducción (Art. 15 de la Ley 2486 de 2025).',
         },
         {
           id: 'tecnicomecanica',
@@ -281,7 +388,8 @@ export function evaluateDocuments(category) {
           required: false,
           badge: 'Exento',
           semaphore: 'green',
-          description: 'NO requiere certificado de Revisión Técnico-Mecánica.',
+          description:
+            'No aplica: al no exigirse matrícula, no hay obligación de Revisión Técnico-Mecánica (el Art. 15 no la menciona expresamente).',
         },
       ],
     };
@@ -289,6 +397,7 @@ export function evaluateDocuments(category) {
 
   return {
     requiresPapers: true,
+    exemptionReason,
     items: [
       {
         id: 'soat',
@@ -327,16 +436,18 @@ export function evaluateDocuments(category) {
 }
 
 /**
- * Regla 4: Vías Permitidas y Límites de Velocidad Operativos
+ * Regla 4: Vías Permitidas y Límites de Velocidad Operativos (Art. 96-1 num. 3 a 7)
  */
 export function evaluateAllowedRoads(input, classification, ageEvaluation) {
   const { vehicleType, powerWatts, isBogota } = sanitizeInput(input);
   const { isVelmpu } = classification;
+  const isDocumentExempt = Boolean(classification.isDocumentExempt);
   const isUnder12 = ageEvaluation.status === 'PROHIBITED_UNDER_12';
   const isMinor12To15 = ageEvaluation.status === 'RESTRICTED_CICLORRUTA_ONLY';
   const isMinorCiclomotor = ageEvaluation.status === 'PROHIBITED_UNDER_16_CICLOMOTOR';
 
-  // Alerta especial Bogotá
+  // Alerta especial Bogotá (regulación local, no contenida en la Ley 2486; la ley solo faculta a la
+  // autoridad competente para restringir tramos de ciclo-infraestructura — Art. 96-1 num. 5).
   const exceedsBogotaPower = powerWatts > LEGAL_LIMITS.BOGOTA_CICLORRUTA_WARNING_WATTS;
   const isNotPedalAssist = vehicleType !== VEHICLE_TYPES.EBIKE;
   const bogotaAlert = isBogota
@@ -349,12 +460,12 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
         title: 'Alerta Reglamentación Distrital Bogotá D.C.',
         message:
           isVelmpu && (exceedsBogotaPower || isNotPedalAssist)
-            ? `Atención en Bogotá D.C.: Autoridades locales como la Secretaría Distrital de Movilidad pueden restringir el uso de ciclorrutas a vehículos que superen los 350 W (${
+            ? `Atención en Bogotá D.C.: La Ley 2486 (Art. 96-1 num. 5) permite a la autoridad local restringir tramos de ciclo-infraestructura. La Secretaría Distrital de Movilidad puede limitar las ciclorrutas a vehículos de hasta 350 W (${
                 exceedsBogotaPower ? `tu vehículo tiene ${powerWatts} W` : 'cumple potencia'
-              }) o que no sean de pedaleo asistido (${
+              }) o de pedaleo asistido (${
                 isNotPedalAssist ? 'no es bicicleta de pedaleo asistido' : 'es pedaleo asistido'
-              }). Verifica la señalización local en corredores distritales.`
-            : 'Aviso Bogotá D.C.: La Secretaría de Movilidad de Bogotá vigila que en las ciclorrutas distritales no se superen los 350 W ni los 25 km/h y prioriza vehículos de pedaleo asistido.',
+              }). Este umbral es distrital, no de la Ley 2486: verifica la reglamentación y señalización local vigente.`
+            : 'Aviso Bogotá D.C.: La Secretaría de Movilidad de Bogotá vigila que en las ciclorrutas distritales no se superen los 350 W ni los 25 km/h y prioriza vehículos de pedaleo asistido (regulación distrital, no contenida en la Ley 2486).',
       }
     : {
         active: false,
@@ -380,7 +491,7 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
           statusLabel: 'Estrictamente Prohibido',
           maxSpeedKmh: 0,
           description:
-            'Estrictamente PROHIBIDO transitar sobre andenes, aceras o zonas exclusivas para peatones (debe bajarse del vehículo y llevarlo apagado/caminando).',
+            'PROHIBIDO transitar sobre aceras, andenes o lugares destinados al tránsito de peatones, así como por vías donde la autoridad competente lo prohíba (Art. 96-1 num. 4 / Infracción G.3).',
         },
         {
           id: 'ciclorruta',
@@ -396,7 +507,7 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
           maxSpeedKmh: isUnder12 ? 0 : LEGAL_LIMITS.MAX_CICLORRUTA_OPERATIONAL_SPEED_KMH,
           description: isUnder12
             ? 'Prohibido conducir en infraestructura pública por ser menor de 12 años.'
-            : `Uso OBLIGATORIO siempre que exista ciclorruta disponible. Velocidad máxima operativa permitida: ${LEGAL_LIMITS.MAX_CICLORRUTA_OPERATIONAL_SPEED_KMH} km/h.`,
+            : `Uso OBLIGATORIO cuando exista ciclo-infraestructura en condiciones adecuadas de seguridad y transitabilidad, salvo tramos restringidos por la autoridad (Art. 96-1 num. 5). Debe dar prelación a peatones y ciclistas. Velocidad máxima: ${LEGAL_LIMITS.MAX_CICLORRUTA_OPERATIONAL_SPEED_KMH} km/h, o el límite inferior señalizado.`,
         },
         {
           id: 'via_urbana',
@@ -414,7 +525,7 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
             ? 'Prohibido circular en vías públicas para menores de 12 años (Causal de inmovilización).'
             : isMinor12To15
             ? 'PROHIBIDO salir a la calzada vehicular para conductores entre 12 y 15 años (Causal de inmovilización inmediata).'
-            : `Permitido circular por el carril derecho (únicamente cuando no haya ciclorruta) a máximo ${LEGAL_LIMITS.MAX_URBAN_ROAD_OPERATIONAL_SPEED_KMH} km/h. Estrictamente prohibido usar carriles exclusivos de transporte público (ej. TransMilenio, MIO, Metroplús).`,
+            : `Solo cuando no exista ciclo-infraestructura o no sea transitable: por el carril derecho, paralelo al andén y en el mismo sentido de la vía, a máximo ${LEGAL_LIMITS.MAX_URBAN_ROAD_OPERATIONAL_SPEED_KMH} km/h (o el límite inferior señalizado). Otros carriles solo para adelantar o girar a la izquierda. Prohibido usar vías preferenciales o exclusivas del transporte público (ej. TransMilenio, MIO, Metroplús) y adelantar por la derecha o entre vehículos (Art. 96-1 num. 6 a 8).`,
         },
         {
           id: 'carretera_nacional',
@@ -428,9 +539,9 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
           maxSpeedKmh: !isUnder12 && !isMinor12To15 && isEbike ? 40 : 0,
           description: isEbike
             ? isUnder12 || isMinor12To15
-              ? 'Por edad del conductor (< 16 años), solo puede circular en tramos que cuenten con ciclorruta segregada.'
-              : 'PERMITIDO: Las bicicletas eléctricas de pedaleo asistido se asimilan a las bicicletas convencionales para circular en carreteras nacionales (o en tramos con ciclorruta).'
-            : 'PROHIBIDO circular por la Red Vial Nacional / carreteras intermunicipales, EXCEPTO si el tramo nacional cuenta con ciclorruta segregada.',
+              ? 'Por edad del conductor (< 16 años), solo puede circular en tramos que cuenten con ciclo-infraestructura.'
+              : 'PERMITIDO: Las bicicletas eléctricas se asimilan a las bicicletas en lo relativo a su circulación por la Red Vial Nacional (Art. 96-1 num. 3).'
+            : 'PROHIBIDO circular por la Red Vial Nacional, EXCEPTO en tramos que cuenten con ciclo-infraestructura no restringida por la autoridad competente (Art. 96-1 num. 3 / Infracción G.2). El tránsito fuera del perímetro urbano depende de la regulación territorial.',
         },
       ],
     };
@@ -470,10 +581,12 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
         semaphore: canOperateCiclomotor ? 'green' : 'red',
         statusLabel: canOperateCiclomotor
           ? 'Permitido (Ocupando el centro del carril)'
-          : 'Prohibido (Menor de 16 años sin licencia)',
+          : 'Prohibido (Menor de 16 años)',
         maxSpeedKmh: canOperateCiclomotor ? 50 : 0,
         description: canOperateCiclomotor
           ? 'Debe circular por el centro del carril vehicular como cualquier motocicleta, respetando los límites de velocidad de la vía (generalmente 50 km/h en zonas urbanas). Prohibido usar carriles exclusivos de TransMilenio.'
+          : isDocumentExempt
+          ? 'Prohibido conducir para menores de 16 años: al no ser VELMPU, no aplica la excepción de 12 a 16 años en ciclo-infraestructura.'
           : 'Prohibido conducir por no cumplir la edad mínima legal de 16 años para obtener licencia A1.',
       },
       {
@@ -482,11 +595,15 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
         allowed: canOperateCiclomotor,
         semaphore: canOperateCiclomotor ? 'green' : 'red',
         statusLabel: canOperateCiclomotor
-          ? 'Permitido (Con SOAT, Placa y Licencia)'
+          ? isDocumentExempt
+            ? 'Permitido (Exento de SOAT, Placa y Licencia)'
+            : 'Permitido (Con SOAT, Placa y Licencia)'
           : 'Prohibido (Menor de 16 años)',
         maxSpeedKmh: canOperateCiclomotor ? 80 : 0,
         description: canOperateCiclomotor
-          ? 'Permitido circular por vías nacionales portando matrícula, SOAT, licencia A1/A2 y casco reglamentario de motocicleta, respetando la velocidad de la vía.'
+          ? isDocumentExempt
+            ? 'Permitido circular por vías nacionales con casco reglamentario, respetando la velocidad de la vía. No se le puede exigir matrícula, SOAT ni licencia (Art. 15, Ley 2486).'
+            : 'Permitido circular por vías nacionales portando matrícula, SOAT, licencia A1/A2 y casco reglamentario de motocicleta, respetando la velocidad de la vía.'
           : 'Prohibido conducir ciclomotores para menores de 16 años.',
       },
     ],
@@ -494,7 +611,7 @@ export function evaluateAllowedRoads(input, classification, ageEvaluation) {
 }
 
 /**
- * Regla 5: Kit de Seguridad y Condiciones de Circulación
+ * Regla 5: Kit de Seguridad y Condiciones de Circulación (Art. 96-1 num. 2, 10, 11 y 12)
  */
 export function evaluateSafetyKit(category) {
   const isVelmpu = category === CATEGORIES.VELMPU;
@@ -508,7 +625,7 @@ export function evaluateSafetyKit(category) {
         semaphore: 'red',
         badge: 'Obligatorio (Evita Inmovilización)',
         specification: isVelmpu
-          ? 'Casco certificado de ciclismo o movilidad personal (normas NTC 5239, EN 1078 o CPSC 1203) debidamente ajustado y con barboquejo abrochado. No requiere casco de moto, pero no llevarlo da inmovilización.'
+          ? 'Casco de seguridad obligatorio con las características que defina el Ministerio de Transporte (Art. 96-1 num. 10 y Art. 7 num. 5). Como referencia, se recomienda casco certificado de ciclismo o movilidad personal (NTC 5239, EN 1078 o CPSC 1203) con barboquejo abrochado. No llevarlo da lugar a multa e inmovilización (G.10).'
           : 'Casco reglamentario de motocicleta certificado bajo norma técnica (ECE 22.05/22.06, DOT FMVSS 218 o NTC 4533 / Res. 23385). Prohibido usar casco de bicicleta aquí (causal de inmovilización y comparendo).',
       },
       {
@@ -518,7 +635,7 @@ export function evaluateSafetyKit(category) {
         semaphore: 'yellow',
         badge: 'Blanca delantera + Roja trasera',
         specification:
-          'Obligatorio contar con luz blanca en la parte delantera y luz roja en la parte trasera en buen estado.',
+          'Obligatorio contar con dispositivos que proyecten luz blanca en la parte delantera y luz roja en la parte trasera (Art. 96-1 num. 12).',
       },
       {
         id: 'reflectivos',
@@ -526,16 +643,20 @@ export function evaluateSafetyKit(category) {
         mandatory: true,
         semaphore: 'yellow',
         badge: `${LEGAL_LIMITS.REFLECTIVE_START_HOUR} a ${LEGAL_LIMITS.REFLECTIVE_END_HOUR}`,
-        specification: `Obligatorio usar chaqueta, chaleco o banda retrorreflectiva entre las ${LEGAL_LIMITS.REFLECTIVE_START_HOUR} y las ${LEGAL_LIMITS.REFLECTIVE_END_HOUR}, o en condiciones de lluvia/baja visibilidad.`,
+        specification: `Obligatorio vestir prendas retrorreflectivas de identificación visibles entre las ${LEGAL_LIMITS.REFLECTIVE_START_HOUR} y las ${LEGAL_LIMITS.REFLECTIVE_END_HOUR} horas del día siguiente${
+          isVelmpu
+            ? ', con las características que defina el Ministerio de Transporte (Art. 96-1 num. 11).'
+            : '.'
+        }`,
       },
       {
         id: 'pasajeros',
-        name: 'Límite de Pasajeros y Niños',
+        name: 'Límite de Pasajeros',
         mandatory: true,
         semaphore: 'red',
-        badge: isVelmpu ? 'Individual / Máx. 2 niños en bicicarga' : 'Máx. 1 Acompañante',
+        badge: isVelmpu ? 'Uso individual (solo el conductor)' : 'Máx. 1 Acompañante',
         specification: isVelmpu
-          ? 'Patinetas y monociclos: uso estrictamente individual (0 pasajeros). Bicicletas/E-bikes: 1 niño en sillita homologada o hasta 2 niños exclusivamente en bicicletas de carga (cargo bikes) diseñadas de fábrica con arnés. Llevar más de 2 niños (+2) está terminantemente prohibido por seguridad vial y sobrecupo.'
+          ? 'No puede movilizar a más de una persona de forma simultánea, sin importar si es adulto o niño (Art. 96-1 num. 2). Excepcionalmente se permite cuando el vehículo esté especialmente diseñado para ello y cumpla las condiciones que defina el Ministerio de Transporte (ej. bicicletas de carga homologadas). Incumplirlo es la infracción G.1.'
           : 'Prohibido sobrecupo (máximo 1 acompañante si la tarjeta de propiedad lo autoriza). Prohibido llevar más de un acompañante o transportar menores de 10 años en motocicleta (decretos distritales y municipales).',
       },
     ],
@@ -544,9 +665,11 @@ export function evaluateSafetyKit(category) {
 
 /**
  * Regla 6: Cuadro de Sanciones, Multas y Causales de Inmovilización
+ * VELMPU: literal G del Art. 131 de la Ley 769 de 2002, adicionado por el Art. 4 de la Ley 2486 (G.1 a G.14).
  */
 export function evaluateSanctions(input, classification, ageEvaluation) {
   const { isVelmpu } = classification;
+  const isDocumentExempt = Boolean(classification.isDocumentExempt);
   const activeAlerts = [];
 
   if (ageEvaluation.immobilizationRisk && ageEvaluation.immobilizationReason) {
@@ -560,40 +683,75 @@ export function evaluateSanctions(input, classification, ageEvaluation) {
       fineLabel: `${LEGAL_LIMITS.VELMPU_FINE_SMLDV} SMLDV`,
       activeAlerts,
       finesList: [
-        'Exceder los 25 km/h en ciclorrutas o los 40 km/h en vías vehiculares urbanas.',
-        'Transitar por andenes, aceras o zonas peatonales.',
-        'Circular sin luces (blanca delantera / roja trasera) o sin prendas reflectivas entre las 6:00 p.m. y las 6:00 a.m.',
-        'Transportar pasajeros en patinetas/monociclos o llevar más de 2 niños en bicicleta (prohibido sobrecupo e inseguridad vial).',
-        'Transportar paquetes, cargas o elementos que afecten la visibilidad o la maniobrabilidad.',
-        'No utilizar la ciclorruta cuando esta se encuentre disponible.',
+        'G.1: Transportar a más de una persona de manera simultánea en un vehículo que no esté expresamente diseñado para ello o sin cumplir las condiciones del Ministerio de Transporte.',
+        'G.2: Circular por la Red Vial Nacional, salvo en tramos con ciclo-infraestructura no restringida (no aplica a bicicletas eléctricas).',
+        'G.3: Circular sobre aceras, andenes, lugares destinados al tránsito de peatones o por vías donde la autoridad lo haya prohibido expresamente.',
+        'G.4: No circular por la ciclo-infraestructura habilitada cuando esté en condiciones adecuadas de seguridad y transitabilidad.',
+        'G.5: Usar carriles distintos al derecho sin necesidad de adelantar o girar a la izquierda, circular en contravía o por vías preferenciales o exclusivas del transporte público.',
+        `G.6: Superar los límites de velocidad señalizados o exceder los máximos de ${LEGAL_LIMITS.MAX_CICLORRUTA_OPERATIONAL_SPEED_KMH} km/h en ciclo-infraestructura y ${LEGAL_LIMITS.MAX_URBAN_ROAD_OPERATIONAL_SPEED_KMH} km/h en vías permitidas.`,
+        'G.7: Adelantar a otros vehículos por la derecha o entre vehículos que transiten por sus respectivos carriles.',
+        'G.8: Realizar una maniobra de giro o de adelantamiento sin utilizar señales direccionales.',
+        'G.9: No respetar las señales o normas de tránsito de la ciclo-infraestructura o de las vías permitidas.',
+        'G.10: Circular sin casco de seguridad que cumpla las características del Ministerio de Transporte (además, inmovilización).',
+        `G.11: Circular entre las ${LEGAL_LIMITS.REFLECTIVE_START_HOUR} y las ${LEGAL_LIMITS.REFLECTIVE_END_HOUR} horas sin vestir prendas retrorreflectivas de identificación.`,
+        'G.12: Circular sin dispositivos que proyecten luz blanca adelante y luz roja atrás.',
+        'G.13: Transportar objetos que disminuyan la visibilidad, incomoden la conducción o constituyan un peligro para los demás actores de la vía.',
+        'G.14: Conducir en estado de embriaguez o bajo los efectos de sustancias psicoactivas (además, inmovilización y comparendo).',
       ],
       immobilizationCauses: [
-        'No utilizar el casco certificado obligatorio.',
-        'Conductor menor de 16 años circulando fuera de la ciclorruta (o menor de 12 años en cualquier vía pública).',
-        'Conducir bajo el influjo de bebidas embriagantes o sustancias psicoactivas.',
+        'No utilizar el casco de seguridad obligatorio (G.10).',
+        'Conducir en estado de embriaguez o bajo los efectos de sustancias psicoactivas (G.14, además del comparendo).',
+        'Conductor menor de 16 años circulando fuera de la ciclo-infraestructura, o menor de 12 años en cualquier vía pública (Art. 96-1 num. 1 y parágrafo).',
       ],
     };
   }
+
+  const ciclomotorFines = [
+    {
+      requiresPapers: true,
+      text: 'Multa Tipo D02 (30 SMLDV + Inmovilización): Transitar sin portar el SOAT vigente.',
+    },
+    {
+      requiresPapers: true,
+      text: 'Multa Tipo D01 (30 SMLDV + Inmovilización): Conducir sin haber obtenido la licencia de conducción categoría A1/A2.',
+    },
+    {
+      requiresPapers: false,
+      text: 'Multa Tipo D05 (30 SMLDV + Inmovilización): Transitar por andenes, aceras, puentes peatonales o ciclorrutas.',
+    },
+    {
+      requiresPapers: false,
+      text: 'Multa Tipo C15 / C24 (15 SMLDV + Inmovilización): Conducir con sobrecupo (llevar más de 1 acompañante o transportar menores de 10 años).',
+    },
+    {
+      requiresPapers: true,
+      text: 'Multa Tipo C35 (15 SMLDV + Inmovilización): No realizar la Revisión Técnico-Mecánica en el plazo legal.',
+    },
+    {
+      requiresPapers: true,
+      text: 'Multa Tipo B03 (8 SMLDV): Conducir un vehículo sin placas o sin matrícula registrada en el RUNT.',
+    },
+  ];
+
+  const ciclomotorImmobilizations = [
+    {
+      requiresPapers: true,
+      text: 'Transitar sin SOAT vigente, sin licencia de conducción o sin matrícula (placa).',
+    },
+    { requiresPapers: false, text: 'Invadir ciclorrutas o andenes peatonales.' },
+    { requiresPapers: false, text: 'No portar casco reglamentario de motocicleta certificado.' },
+    { requiresPapers: false, text: 'Conducir bajo efectos del alcohol o sustancias psicoactivas.' },
+  ];
+
+  const applies = (rule) => !isDocumentExempt || !rule.requiresPapers;
 
   return {
     categoryCode: 'Código Nacional de Tránsito (Ley 769 de 2002 / Resolución 160 de 2017)',
     fineSmldv: LEGAL_LIMITS.CICLOMOTOR_FINE_D_SMLDV,
     fineLabel: '15 a 30 SMLDV + Inmovilización',
     activeAlerts,
-    finesList: [
-      'Multa Tipo D02 (30 SMLDV + Inmovilización): Transitar sin portar el SOAT vigente.',
-      'Multa Tipo D01 (30 SMLDV + Inmovilización): Conducir sin haber obtenido la licencia de conducción categoría A1/A2.',
-      'Multa Tipo D05 (30 SMLDV + Inmovilización): Transitar por andenes, aceras, puentes peatonales o ciclorrutas.',
-      'Multa Tipo C15 / C24 (15 SMLDV + Inmovilización): Conducir con sobrecupo (llevar más de 1 acompañante o transportar menores de 10 años).',
-      'Multa Tipo C35 (15 SMLDV + Inmovilización): No realizar la Revisión Técnico-Mecánica en el plazo legal.',
-      'Multa Tipo B03 (8 SMLDV): Conducir un vehículo sin placas o sin matrícula registrada en el RUNT.',
-    ],
-    immobilizationCauses: [
-      'Transitar sin SOAT vigente, sin licencia de conducción o sin matrícula (placa).',
-      'Invadir ciclorrutas o andenes peatonales.',
-      'No portar casco reglamentario de motocicleta certificado.',
-      'Conducir bajo efectos del alcohol o sustancias psicoactivas.',
-    ],
+    finesList: ciclomotorFines.filter(applies).map((rule) => rule.text),
+    immobilizationCauses: ciclomotorImmobilizations.filter(applies).map((rule) => rule.text),
   };
 }
 
@@ -604,8 +762,16 @@ export function evaluateSanctions(input, classification, ageEvaluation) {
 export function evaluateVehicleLegalStatus(rawInput = {}) {
   const input = sanitizeInput(rawInput);
   const classification = classifyVehicle(input);
-  const ageEvaluation = evaluateDriverAge(input.driverAge, classification.category);
-  const documents = evaluateDocuments(classification.category);
+  const ageEvaluation = evaluateDriverAge(
+    input.driverAge,
+    classification.category,
+    classification.isDocumentExempt
+  );
+  const documents = evaluateDocuments(
+    classification.category,
+    classification.isDocumentExempt,
+    classification.documentExemption.reason
+  );
   const allowedRoads = evaluateAllowedRoads(input, classification, ageEvaluation);
   const safetyKit = evaluateSafetyKit(classification.category);
   const sanctions = evaluateSanctions(input, classification, ageEvaluation);

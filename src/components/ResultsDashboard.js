@@ -79,43 +79,60 @@ export function renderResultsDashboard(container, evaluation) {
   const vehicleMeta = VEHICLE_TYPE_METADATA[input.vehicleType];
   const ageStyles = getSemaphoreStyles(ageEvaluation.semaphore);
 
+  // Estilos del veredicto: VELMPU (verde), Ciclomotor exento por Art. 15 (ámbar), Ciclomotor con papeles (rojo)
+  const hero = isVelmpu
+    ? {
+        section: 'bg-white dark:bg-[#111c27] border-emerald-600 dark:border-emerald-500',
+        iconBox: 'bg-emerald-700 text-white',
+        badge:
+          'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800',
+        label: 'Categoría VELMPU (Exento de trámites)',
+      }
+    : classification.isDocumentExempt
+    ? {
+        section: 'bg-white dark:bg-[#1f1a10] border-amber-500 dark:border-amber-500',
+        iconBox: 'bg-amber-600 text-white',
+        badge:
+          'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800',
+        label: 'Categoría Ciclomotor (Exento de trámites — Art. 15)',
+      }
+    : {
+        section: 'bg-white dark:bg-[#1f131a] border-rose-600 dark:border-rose-500',
+        iconBox: 'bg-rose-700 text-white',
+        badge:
+          'bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800',
+        label: 'Categoría Ciclomotor (Requiere trámites)',
+      };
+
   // Ordenar vías: Ciclorruta, Vía Urbana, Andenes y Carretera Nacional
   const orderedRoadIds = ['ciclorruta', 'via_urbana', 'andenes', 'carretera_nacional'];
   const sortedRoads = orderedRoadIds
     .map((id) => allowedRoads.roads.find((r) => r.id === id))
     .filter(Boolean);
 
+  const aiPromptText = `Hola. Actúa como un experto en la normativa de movilidad eléctrica y tránsito en Colombia, con pleno conocimiento de la nueva Ley 2486 de 2025 (categoría VELMPU: patinetas, bicicletas eléctricas y monociclos) y la Resolución 160 de 2017 (ciclomotores y motos eléctricas).
+
+Por favor confírmame que estás listo respondiéndome con un saludo breve y diciéndome exactamente: "¡Claro! Dime qué preguntas tienes sobre tu vehículo o sobre la nueva ley" para que pueda hacerte mis consultas.`;
+
   container.innerHTML = `
     <div class="space-y-5" aria-live="polite">
       <!-- 1. DICTAMEN LEGAL PRINCIPAL (VEREDICTO HERO) -->
       <section
-        class="rounded-xl p-5 sm:p-6 border-2 shadow-xs transition-colors ${
-          isVelmpu
-            ? 'bg-white dark:bg-[#111c27] border-emerald-600 dark:border-emerald-500'
-            : 'bg-white dark:bg-[#1f131a] border-rose-600 dark:border-rose-500'
-        }"
+        class="rounded-xl p-5 sm:p-6 border-2 shadow-xs transition-colors ${hero.section}"
       >
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div class="flex items-start gap-3.5">
             <div
-              class="p-2.5 rounded-lg shrink-0 ${
-                isVelmpu
-                  ? 'bg-emerald-700 text-white'
-                  : 'bg-rose-700 text-white'
-              }"
+              class="p-2.5 rounded-lg shrink-0 ${hero.iconBox}"
             >
               ${isVelmpu ? ICONS.shieldCheck : ICONS.shieldAlert}
             </div>
             <div class="space-y-1">
               <div class="flex flex-wrap items-center gap-2">
                 <span
-                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
-                    isVelmpu
-                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                      : 'bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
-                  }"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${hero.badge}"
                 >
-                  ${isVelmpu ? 'Categoría VELMPU (Exento de trámites)' : 'Categoría Ciclomotor (Requiere trámites)'}
+                  ${hero.label}
                 </span>
                 <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
                   ${vehicleMeta.label} — ${input.powerWatts}W / ${input.weightKg}kg / ${input.maxSpeedKmh}km/h
@@ -211,6 +228,15 @@ export function renderResultsDashboard(container, evaluation) {
             <p class="text-xs text-slate-500 dark:text-slate-400">
               Marco normativo: ${classification.legalFramework}
             </p>
+            ${
+              documents.exemptionReason
+                ? `<p class="text-xs mt-1 font-medium ${
+                    documents.requiresPapers
+                      ? 'text-slate-500 dark:text-slate-400'
+                      : 'text-emerald-700 dark:text-emerald-400'
+                  }">${documents.exemptionReason}</p>`
+                : ''
+            }
           </div>
         </div>
 
@@ -398,7 +424,7 @@ export function renderResultsDashboard(container, evaluation) {
                 <p class="text-xs text-slate-700 dark:text-slate-300 leading-snug">
                   ${
                     isVelmpu
-                      ? 'Está permitido el casco de ciclismo o patinaje con certificación técnica y barboquejo abrochado.'
+                      ? 'Casco de seguridad obligatorio con las características que defina el Ministerio de Transporte. Como referencia: casco de ciclismo o patinaje certificado y con barboquejo abrochado.'
                       : 'Prohibido usar casco de bicicleta. Exige casco cerrado o abatible de moto (ECE 22.06 / DOT / NTC 4533).'
                   }
                 </p>
@@ -413,13 +439,13 @@ export function renderResultsDashboard(container, evaluation) {
                     <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                       ${
                         isVelmpu
-                          ? '<strong>SÍ puedes usar el casco de ciclismo o patinaje</strong>, siempre que cuente con certificación técnica (como <strong>NTC 5239, EN 1078 o CPSC 1203</strong>) y esté <strong>abrochado con su barboquejo</strong>. No se permite transitar con el casco suelto ni con cascos plásticos de juguete.'
+                          ? 'La Ley 2486 exige <strong>casco de seguridad con las características que defina el Ministerio de Transporte</strong> (Art. 96-1 num. 10). Mientras tanto, como referencia, <strong>puedes usar casco de ciclismo o patinaje</strong> con certificación técnica (como <strong>NTC 5239, EN 1078 o CPSC 1203</strong>) y <strong>abrochado con su barboquejo</strong>. No se permite transitar con el casco suelto ni con cascos plásticos de juguete.'
                           : '<strong class="text-rose-700 dark:text-rose-300">ESTRICTAMENTE PROHIBIDO usar casco de bicicleta en ciclomotores.</strong> La norma exige casco cerrado o abatible de motocicleta certificado bajo <strong>ECE 22.05 / ECE 22.06, DOT FMVSS 218 o NTC 4533</strong> con visor reglamentario y broche micrométrico o doble D.'
                       }
                     </p>
                     <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold">
                       <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
-                        ${isVelmpu ? 'Norma: NTC 5239 / EN 1078' : 'Norma: ECE 22.06 / DOT / NTC 4533'}
+                        ${isVelmpu ? 'Referencia: NTC 5239 / EN 1078 (pendiente MinTransporte)' : 'Norma: ECE 22.06 / DOT / NTC 4533'}
                       </span>
                       <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
                         Obligatorio barboquejo abrochado
@@ -569,6 +595,101 @@ export function renderResultsDashboard(container, evaluation) {
           </details>
         </div>
       </section>
+
+      <!-- 5. CONSULTA PERSONALIZADA CON INTELIGENCIA ARTIFICIAL (PROMPT LISTO PARA COPIAR) -->
+      <section class="bg-white dark:bg-[#111927] rounded-xl border border-indigo-200/80 dark:border-indigo-950/60 p-5 sm:p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+          <div class="flex items-start gap-2.5">
+            <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                <path d="M5 3v4"/>
+                <path d="M19 17v4"/>
+                <path d="M3 5h4"/>
+                <path d="M17 19h4"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                ¿Quieres resolver dudas más específicas sobre tu caso?
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                Copia este prompt y pégalo en <strong>ChatGPT, Claude o Gemini</strong> para hacer consultas jurídicas detalladas sobre la Ley 2486 de 2025.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="btn-copy-ai-prompt"
+            class="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors cursor-pointer shrink-0 shadow-2xs focus-visible:outline-2 focus-visible:outline-indigo-600"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+            <span>Copiar prompt para IA</span>
+          </button>
+        </div>
+
+        <p id="ai-prompt-toast" class="hidden text-xs font-semibold text-emerald-700 dark:text-emerald-400 text-right mb-2" role="status">
+          ¡Prompt copiado al portapapeles! Listo para pegar en ChatGPT, Claude o Gemini.
+        </p>
+
+        <!-- Desplegable con el texto del prompt generado -->
+        <details class="group rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-900/40">
+          <summary class="flex items-center justify-between cursor-pointer list-none p-3 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white select-none transition-colors">
+            <span>Ver texto del prompt generado</span>
+            <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+              <span>Ver más</span>
+              ${CHEVRON_SVG}
+            </span>
+          </summary>
+          <div class="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c121d]">
+            <pre class="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-sans leading-relaxed select-all bg-slate-50 dark:bg-slate-950 p-3 rounded-lg border border-slate-200/80 dark:border-slate-800">${aiPromptText}</pre>
+            
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-500">
+              <span>Pega el prompt directamente en:</span>
+              <div class="flex items-center gap-2.5">
+                <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">ChatGPT ↗</a>
+                <span>•</span>
+                <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Claude ↗</a>
+                <span>•</span>
+                <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Gemini ↗</a>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
     </div>
   `;
+
+  // Listener para copiar el prompt de IA con feedback
+  const copyPromptBtn = container.querySelector('#btn-copy-ai-prompt');
+  const promptToast = container.querySelector('#ai-prompt-toast');
+  if (copyPromptBtn) {
+    copyPromptBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(aiPromptText);
+        if (promptToast) {
+          promptToast.classList.remove('hidden');
+          copyPromptBtn.classList.replace('bg-indigo-600', 'bg-emerald-700');
+          copyPromptBtn.innerHTML = `
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>¡Copiado!</span>
+          `;
+          setTimeout(() => {
+            promptToast.classList.add('hidden');
+            copyPromptBtn.classList.replace('bg-emerald-700', 'bg-indigo-600');
+            copyPromptBtn.innerHTML = `
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Copiar prompt para IA</span>
+            `;
+          }, 2400);
+        }
+      } catch {
+        window.prompt('Copia este prompt para pegarlo en tu IA:', aiPromptText);
+      }
+    });
+  }
 }

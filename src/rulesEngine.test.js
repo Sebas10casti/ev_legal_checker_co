@@ -2,11 +2,14 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CATEGORIES,
+  DEFAULT_INPUT,
+  LEGAL_LIMITS,
   VEHICLE_TYPES,
   classifyVehicle,
   evaluateDriverAge,
   evaluateDocuments,
   evaluateAllowedRoads,
+  evaluateSafetyKit,
   evaluateVehicleLegalStatus,
 } from './rulesEngine.js';
 
@@ -122,10 +125,84 @@ describe('Motor de Reglas Normativas (Ley 2486 de 2025 vs Resolución 160 de 201
       assert.equal(docs.items.every((item) => item.required === false && item.badge === 'Exento'), true);
     });
 
-    it('Exige SOAT, Matrícula/RUNT, Licencia y Técnico-Mecánica a categoría CICLOMOTOR', () => {
+    it('Exige SOAT, Matrícula/RUNT, Licencia y Técnico-Mecánica a categoría CICLOMOTOR no exenta', () => {
       const docs = evaluateDocuments(CATEGORIES.CICLOMOTOR);
       assert.equal(docs.requiresPapers, true);
       assert.equal(docs.items.every((item) => item.required === true && item.badge === 'Obligatorio'), true);
+    });
+  });
+
+  describe('Regla 3b: Exención del Art. 15 Ley 2486 (independiente de la categoría VELMPU)', () => {
+    it('Exime de documentos a un vehículo de más de 1000 W si pesa 60 kg o menos', () => {
+      const status = evaluateVehicleLegalStatus({
+        vehicleType: VEHICLE_TYPES.SCOOTER,
+        powerWatts: 1500,
+        weightKg: 50,
+        maxSpeedKmh: 45,
+        driverAge: 30,
+      });
+      assert.equal(status.classification.category, CATEGORIES.CICLOMOTOR);
+      assert.equal(status.classification.isDocumentExempt, true);
+      assert.equal(status.classification.documentExemption.basis, 'WEIGHT');
+      assert.equal(status.documents.requiresPapers, false);
+      assert.equal(status.classification.semaphore, 'yellow');
+    });
+
+    it('Exime de documentos a un vehículo de más de 60 kg que no supera 40 km/h', () => {
+      const status = evaluateVehicleLegalStatus({
+        vehicleType: VEHICLE_TYPES.EBIKE,
+        powerWatts: 800,
+        weightKg: 80,
+        maxSpeedKmh: 35,
+        driverAge: 30,
+      });
+      assert.equal(status.classification.isVelmpu, false);
+      assert.equal(status.classification.documentExemption.basis, 'LOW_SPEED');
+      assert.equal(status.documents.requiresPapers, false);
+    });
+
+    it('Exime de documentos a un "moped" liviano (40 kg) aunque no sea VELMPU', () => {
+      const status = evaluateVehicleLegalStatus({
+        vehicleType: VEHICLE_TYPES.MOPED,
+        powerWatts: 800,
+        weightKg: 40,
+        maxSpeedKmh: 25,
+        driverAge: 30,
+      });
+      assert.equal(status.classification.isVelmpu, false);
+      assert.equal(status.documents.requiresPapers, false);
+      const ciclorruta = status.allowedRoads.roads.find((r) => r.id === 'ciclorruta');
+      assert.equal(ciclorruta.allowed, false);
+    });
+
+    it('Exige documentos solo si pesa más de 60 kg Y supera 40 km/h', () => {
+      const status = evaluateVehicleLegalStatus({
+        vehicleType: VEHICLE_TYPES.MOPED,
+        powerWatts: 1500,
+        weightKg: 75,
+        maxSpeedKmh: 55,
+        driverAge: 30,
+      });
+      assert.equal(status.classification.isDocumentExempt, false);
+      assert.equal(status.documents.requiresPapers, true);
+      assert.equal(status.classification.semaphore, 'red');
+    });
+
+    it('No incluye multas por SOAT, licencia, placa o RTM a un ciclomotor exento por el Art. 15', () => {
+      const status = evaluateVehicleLegalStatus({
+        vehicleType: VEHICLE_TYPES.SCOOTER,
+        powerWatts: 1500,
+        weightKg: 50,
+        maxSpeedKmh: 45,
+        driverAge: 30,
+      });
+      const fines = status.sanctions.finesList.join(' ');
+      assert.equal(/D02|D01|B03|C35/.test(fines), false);
+      assert.equal(/D05/.test(fines), true);
+      assert.equal(
+        status.sanctions.immobilizationCauses.some((c) => c.includes('sin SOAT')),
+        false
+      );
     });
   });
 
@@ -217,6 +294,33 @@ describe('Motor de Reglas Normativas (Ley 2486 de 2025 vs Resolución 160 de 201
         driverAge: 25,
       });
       assert.equal(ciclomotor.sanctions.fineSmldv, 30);
+    });
+
+    it('Lista las 14 infracciones del literal G (G.1 a G.14) para VELMPU', () => {
+      const velmpu = evaluateVehicleLegalStatus(DEFAULT_INPUT);
+      const fines = velmpu.sanctions.finesList;
+      assert.equal(fines.length, 14);
+      for (let i = 1; i <= 14; i += 1) {
+        assert.equal(
+          fines.some((f) => f.startsWith(`G.${i}:`)),
+          true,
+          `Falta la infracción G.${i}`
+        );
+      }
+    });
+
+    it('Limita el VELMPU a una sola persona (sin excepción para niños en bicicleta convencional)', () => {
+      const kit = evaluateSafetyKit(CATEGORIES.VELMPU);
+      const pasajeros = kit.items.find((i) => i.id === 'pasajeros');
+      assert.equal(pasajeros.badge, 'Uso individual (solo el conductor)');
+      assert.equal(/sillita|2 niños/.test(pasajeros.specification), false);
+      assert.equal(LEGAL_LIMITS.MAX_VELMPU_PERSONS, 1);
+    });
+
+    it('Exige prendas retrorreflectivas entre las 18:00 y las 6:00 horas', () => {
+      const kit = evaluateSafetyKit(CATEGORIES.VELMPU);
+      const reflectivos = kit.items.find((i) => i.id === 'reflectivos');
+      assert.equal(reflectivos.badge, '18:00 a 6:00');
     });
   });
 });

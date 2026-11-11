@@ -274,7 +274,7 @@ export function mountVehicleForm(container, initialState, onChange) {
               data-jump-value="60"
               style="left: ${pos60Kg}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Fijar en 60 kg (Tope máximo Ley 2486)"
+              title="Fijar en 60 kg (Umbral de vehículo liviano, Art. 15 Ley 2486)"
             >
               <span class="w-0.5 h-1.5 bg-rose-500"></span>
               <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800">
@@ -338,7 +338,7 @@ export function mountVehicleForm(container, initialState, onChange) {
               data-jump-value="40"
               style="left: ${pos40Kmh}%"
               class="threshold-marker -translate-x-1/2 absolute top-0 flex flex-col items-center group cursor-pointer"
-              title="Fijar en 40 km/h (Tope máximo de diseño Ley 2486)"
+              title="Fijar en 40 km/h (Velocidad máxima VELMPU en vías permitidas, Ley 2486)"
             >
               <span class="w-0.5 h-1.5 bg-rose-500"></span>
               <span class="px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-300 font-semibold border border-rose-300 dark:border-rose-800">
@@ -524,10 +524,14 @@ export function mountVehicleForm(container, initialState, onChange) {
     }
 
     if (state.weightKg > LEGAL_LIMITS.MAX_VELMPU_WEIGHT_KG) {
-      weightHint.textContent = `Supera el límite de 60 kg (+${state.weightKg - 60} kg): Se clasifica como Ciclomotor.`;
+      weightHint.textContent = `Supera el límite de 60 kg (+${state.weightKg - 60} kg): Se clasifica como Ciclomotor${
+        state.maxSpeedKmh <= LEGAL_LIMITS.MAX_EXEMPT_SPEED_KMH
+          ? ', pero al no superar 40 km/h sigue exento de SOAT, placa y licencia (Art. 15).'
+          : ' y, al superar también 40 km/h, requiere SOAT, placa y licencia.'
+      }`;
       weightHint.className = 'text-xs mt-1 font-semibold text-rose-700 dark:text-rose-400';
     } else {
-      weightHint.textContent = `Cumple el peso máximo legal para vehículo liviano (≤ 60 kg).`;
+      weightHint.textContent = `Cumple el peso de vehículo liviano (≤ 60 kg): exento de SOAT, placa y licencia (Art. 15 Ley 2486).`;
       weightHint.className = 'text-xs mt-1 font-medium text-emerald-800 dark:text-emerald-400';
     }
 

@@ -57,7 +57,7 @@ function buildShareMessage(evaluation) {
   const shareUrl = buildShareUrl(input);
   const papersText = documents.requiresPapers
     ? 'Requiere SOAT, Placa/RUNT y Licencia A1/A2'
-    : 'Exento de SOAT, Placa y Licencia (Ley 2486 de 2025)';
+    : 'Exento de SOAT, Placa y Licencia (Art. 15, Ley 2486 de 2025)';
 
   return [
     `⚡ *Validador Legal de Movilidad Eléctrica en Colombia*`,

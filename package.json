@@ -1,0 +1,29 @@
+{
+  "name": "ev-legal-checker-co",
+  "version": "1.0.0",
+  "description": "Validador Normativo Interactivo de Movilidad Eléctrica en Colombia (Ley 2486 de 2025 vs. Resolución 160 de 2017)",
+  "type": "module",
+  "homepage": "./",
+  "scripts": {
+    "test": "node --test src/rulesEngine.test.js",
+    "build": "node scripts/build.js",
+    "start": "node scripts/serve.js",
+    "predeploy": "npm run build",
+    "deploy": "npx gh-pages -d dist"
+  },
+  "keywords": [
+    "colombia",
+    "movilidad-electrica",
+    "ley-2486-2025",
+    "resolucion-160-2017",
+    "patinetas-electricas",
+    "bicicletas-electricas",
+    "ciclomotores",
+    "velmpu"
+  ],
+  "author": "ev_legal_checker_co",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.2.0"
+  }
+}

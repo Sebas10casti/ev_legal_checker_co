@@ -309,6 +309,70 @@ export function renderResultsDashboard(container, evaluation) {
             Elementos de protección personal y reglas operativas exigidas en vía pública.
           </p>
 
+          <!-- Tarjeta Destacada Visual: Especificación Gráfica del Casco Requerido -->
+          <div class="mb-5 rounded-2xl border-2 overflow-hidden shadow-xs ${
+            isVelmpu
+              ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
+              : 'bg-rose-50/70 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800'
+          }">
+            <div class="p-4 sm:p-5 flex flex-col md:flex-row items-center gap-5">
+              <div class="w-full md:w-56 shrink-0 aspect-[4/3] rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-xs bg-white dark:bg-slate-900">
+                <img
+                  src="${isVelmpu ? './styles/casco-velmpu.svg' : './styles/casco-ciclomotor.svg'}"
+                  alt="Ilustración técnica del tipo de casco reglamentario para este vehículo"
+                  class="w-full h-full object-contain"
+                  loading="lazy"
+                />
+              </div>
+              <div class="flex-1 space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wide ${
+                    isVelmpu
+                      ? 'bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100'
+                      : 'bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-100'
+                  }">
+                    ${isVelmpu ? 'Casco para VELMPU (Ley 2486)' : 'Casco Reglamentario (Resolución 23385)'}
+                  </span>
+                  <span class="text-xs font-bold text-rose-600 dark:text-rose-400">
+                    Evita Inmovilización Inmediata
+                  </span>
+                </div>
+
+                <h4 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                  ${
+                    isVelmpu
+                      ? '¿Qué casco exige la ley para patineta o bicicleta eléctrica?'
+                      : '¿Qué casco exige la ley para ciclomotor o moto eléctrica?'
+                  }
+                </h4>
+
+                <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  ${
+                    isVelmpu
+                      ? '<strong>SÍ puedes usar el casco de ciclismo / patinaje</strong>, siempre que sea certificado con norma técnica (ej. <strong>NTC 5239, EN 1078 o CPSC 1203</strong>) y esté <strong>debidamente abrochado con barboquejo</strong>. No se permite transitar con el casco suelto ni con cascos de juguete sin absorción de impactos.'
+                      : '<strong class="text-rose-700 dark:text-rose-300">ESTRICTAMENTE PROHIBIDO usar cascos de bicicleta en ciclomotores.</strong> La norma exige casco cerrado o abatible de motocicleta certificado bajo <strong>ECE 22.05 / ECE 22.06, DOT FMVSS 218 o NTC 4533</strong> con visor y broche micrométrico/doble D.'
+                  }
+                </p>
+
+                <div class="pt-1 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                  <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                    ${isVelmpu ? 'Norma: NTC 5239 / EN 1078' : 'Norma: ECE 22.06 / DOT / NTC 4533'}
+                  </span>
+                  <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                    Obligatorio barboquejo abrochado
+                  </span>
+                  <span class="px-2 py-0.5 rounded ${
+                    isVelmpu
+                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                      : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
+                  }">
+                    ${isVelmpu ? 'No exige casco cerrado de moto' : 'Casco de cicla = Inmovilización'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             ${safetyKit.items
               .map((item) => {

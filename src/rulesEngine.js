@@ -508,8 +508,8 @@ export function evaluateSafetyKit(category) {
         semaphore: 'red',
         badge: 'Obligatorio (Evita Inmovilización)',
         specification: isVelmpu
-          ? 'Casco certificado de movilidad personal o ciclismo debidamente abrochado. No llevarlo es causal de inmovilización inmediata.'
-          : 'Casco reglamentario de motocicleta bajo norma técnica (NTC 4533 / Resolución 23385). No usarlo genera multa e inmovilización.',
+          ? 'Casco certificado de ciclismo o movilidad personal (normas NTC 5239, EN 1078 o CPSC 1203) debidamente ajustado y con barboquejo abrochado. No requiere casco de moto, pero no llevarlo da inmovilización.'
+          : 'Casco reglamentario de motocicleta certificado bajo norma técnica (ECE 22.05/22.06, DOT FMVSS 218 o NTC 4533 / Res. 23385). Prohibido usar casco de bicicleta aquí (causal de inmovilización y comparendo).',
       },
       {
         id: 'luces',

@@ -3,6 +3,9 @@
  * Presenta el Veredicto Principal de Estado, la evaluación de edad, la matriz de 4 documentos,
  * los permisos de circulación por infraestructura vial, la especificación técnica de cascos (NTC vs ECE)
  * y el régimen de sanciones e inmovilización.
+ * 
+ * Implementa divulgación progresiva (progressive disclosure) mediante desplegables accesibles
+ * (<details>/<summary>) para mantener la interfaz despejada sin perder rigor legal.
  */
 
 import { VEHICLE_TYPE_METADATA } from '../rulesEngine.js';
@@ -21,6 +24,12 @@ const SAFETY_ICONS = {
   reflectivos: ICONS.reflective,
   pasajeros: ICONS.passenger,
 };
+
+const CHEVRON_SVG = `
+  <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-150 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+`;
 
 /**
  * Devuelve tokens de color e icono de semáforo con contraste óptimo y soporte claro/oscuro.
@@ -77,7 +86,7 @@ export function renderResultsDashboard(container, evaluation) {
     .filter(Boolean);
 
   container.innerHTML = `
-    <div class="space-y-6" aria-live="polite">
+    <div class="space-y-5" aria-live="polite">
       <!-- 1. DICTAMEN LEGAL PRINCIPAL (VEREDICTO HERO) -->
       <section
         class="rounded-xl p-5 sm:p-6 border-2 shadow-xs transition-colors ${
@@ -126,11 +135,19 @@ export function renderResultsDashboard(container, evaluation) {
         ${
           classification.triggers.length > 0
             ? `
-          <div class="mt-4 pt-3.5 border-t border-rose-200 dark:border-rose-900/60">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300 mb-2">
-              Límites técnicos superados (causales de clasificación como Ciclomotor)
-            </h3>
-            <ul class="space-y-1.5 text-xs text-rose-900 dark:text-rose-200">
+          <!-- Desplegable: Razones técnicas de clasificación como ciclomotor -->
+          <details class="group mt-4 pt-3 border-t border-rose-200 dark:border-rose-900/60" open>
+            <summary class="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-rose-800 dark:text-rose-300 hover:text-rose-950 dark:hover:text-rose-100 select-none">
+              <span class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                <span>¿Por qué clasifica como Ciclomotor? (${classification.triggers.length} límites superados)</span>
+              </span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400">
+                <span>Ver más</span>
+                ${CHEVRON_SVG}
+              </span>
+            </summary>
+            <ul class="mt-2 space-y-1.5 text-xs text-rose-900 dark:text-rose-200 pl-3">
               ${classification.triggers
                 .map(
                   (t) => `
@@ -142,24 +159,24 @@ export function renderResultsDashboard(container, evaluation) {
                 )
                 .join('')}
             </ul>
-          </div>
+          </details>
         `
             : ''
         }
 
-        <!-- Sub-bloque de Validación de Edad -->
-        <div class="mt-4 p-3.5 rounded-lg border ${ageStyles.card} flex items-start gap-3">
-          <div class="${ageStyles.icon} mt-0.5 shrink-0">
-            ${
-              ageEvaluation.semaphore === 'green'
-                ? ICONS.checkCircle
-                : ageEvaluation.semaphore === 'yellow'
-                ? ICONS.alertTriangle
-                : ICONS.xOctagon
-            }
-          </div>
-          <div class="flex-1">
-            <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- Sub-bloque de Validación de Edad (con desplegable) -->
+        <details class="group mt-4 p-3.5 rounded-lg border ${ageStyles.card} transition-colors">
+          <summary class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 cursor-pointer list-none select-none">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span class="${ageStyles.icon} shrink-0">
+                ${
+                  ageEvaluation.semaphore === 'green'
+                    ? ICONS.checkCircle
+                    : ageEvaluation.semaphore === 'yellow'
+                    ? ICONS.alertTriangle
+                    : ICONS.xOctagon
+                }
+              </span>
               <h3 class="text-xs sm:text-sm font-bold ${ageStyles.title}">
                 ${ageEvaluation.title}
               </h3>
@@ -173,48 +190,62 @@ export function renderResultsDashboard(container, evaluation) {
                 }
               </span>
             </div>
-            <p class="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
-              ${ageEvaluation.description}
-            </p>
-          </div>
-        </div>
+            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 self-end sm:self-auto shrink-0">
+              <span>Ver más</span>
+              ${CHEVRON_SVG}
+            </span>
+          </summary>
+          <p class="text-xs text-slate-700 dark:text-slate-300 pt-2.5 mt-2 border-t border-slate-200/60 dark:border-slate-800/60 leading-relaxed">
+            ${ageEvaluation.description}
+          </p>
+        </details>
       </section>
 
-      <!-- 2. MATRIZ DE DOCUMENTACIÓN OBLIGATORIA (4 REQUISITOS) -->
+      <!-- 2. MATRIZ DE DOCUMENTACIÓN OBLIGATORIA (CON DESPLEGABLES) -->
       <section class="bg-white dark:bg-[#111927] rounded-xl border border-slate-300/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs">
-        <div class="flex items-center justify-between gap-2 mb-4">
+        <div class="flex items-center justify-between gap-2 mb-3.5">
           <div>
             <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
               Documentación exigida por autoridades de tránsito
             </h3>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              Marco normativo aplicable: ${classification.legalFramework}
+              Marco normativo: ${classification.legalFramework}
             </p>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           ${documents.items
             .map((doc) => {
               const st = getSemaphoreStyles(doc.semaphore);
               return `
-              <div class="p-3.5 rounded-lg border ${st.card} flex flex-col justify-between">
-                <div class="flex items-start justify-between gap-2 mb-2">
+              <div class="p-3.5 rounded-lg border ${st.card} flex flex-col justify-between transition-colors">
+                <div class="space-y-1.5">
                   <div class="flex items-center gap-2">
                     <span class="${st.icon} shrink-0">
                       ${doc.required ? ICONS.xOctagon : ICONS.checkCircle}
                     </span>
-                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                    <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight">
                       ${doc.name}
                     </h4>
                   </div>
-                  <span class="text-xs font-bold px-2 py-0.5 rounded ${st.badge}">
-                    ${doc.badge}
-                  </span>
+                  <div>
+                    <span class="inline-flex text-xs font-bold px-2 py-0.5 rounded ${st.badge}">
+                      ${doc.badge}
+                    </span>
+                  </div>
                 </div>
-                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  ${doc.description}
-                </p>
+
+                <!-- Desplegable con detalle legal -->
+                <details class="group mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                  <summary class="flex items-center justify-between cursor-pointer list-none text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 select-none">
+                    <span>Ver más</span>
+                    ${CHEVRON_SVG}
+                  </summary>
+                  <p class="text-xs text-slate-600 dark:text-slate-300 pt-2 leading-relaxed">
+                    ${doc.description}
+                  </p>
+                </details>
               </div>
             `;
             })
@@ -222,14 +253,14 @@ export function renderResultsDashboard(container, evaluation) {
         </div>
       </section>
 
-      <!-- 3. ZONAS DE CIRCULACIÓN Y LÍMITES DE VELOCIDAD -->
+      <!-- 3. ZONAS DE CIRCULACIÓN Y LÍMITES DE VELOCIDAD (CON DESPLEGABLES) -->
       <section class="bg-white dark:bg-[#111927] rounded-xl border border-slate-300/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs">
-        <div class="mb-4">
+        <div class="mb-3.5">
           <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
             Infraestructura permitida y límites de velocidad
           </h3>
           <p class="text-xs text-slate-500 dark:text-slate-400">
-            Reglas de tránsito por tipo de vía según la Ley 2486 de 2025 y la Resolución 160 de 2017.
+            Reglas de circulación vial bajo la Ley 2486 de 2025 y la Resolución 160 de 2017.
           </p>
         </div>
 
@@ -237,7 +268,7 @@ export function renderResultsDashboard(container, evaluation) {
         ${
           allowedRoads.bogotaAlert.active
             ? `
-          <div class="mb-4 p-3.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 flex items-start gap-3">
+          <div class="mb-3.5 p-3.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 flex items-start gap-3">
             <span class="text-amber-700 dark:text-amber-400 mt-0.5 shrink-0">
               ${ICONS.alertTriangle}
             </span>
@@ -259,17 +290,17 @@ export function renderResultsDashboard(container, evaluation) {
             : ''
         }
 
-        <div class="space-y-2.5">
+        <div class="space-y-2">
           ${sortedRoads
             .map((road) => {
               const st = getSemaphoreStyles(road.semaphore);
               return `
-              <div class="p-3.5 rounded-lg border ${st.card} flex items-start gap-3">
+              <div class="p-3 rounded-lg border ${st.card} flex items-start gap-3">
                 <div class="p-2 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 ${st.icon} shrink-0">
                   ${ROAD_ICONS[road.id] || ICONS.roadUrban}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
                     <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                       ${road.name}
                     </h4>
@@ -288,9 +319,17 @@ export function renderResultsDashboard(container, evaluation) {
                       </span>
                     </div>
                   </div>
-                  <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    ${road.description}
-                  </p>
+
+                  <!-- Desplegable con condiciones de tránsito -->
+                  <details class="group mt-1 pt-1.5 border-t border-slate-200/50 dark:border-slate-800/50">
+                    <summary class="flex items-center justify-between cursor-pointer list-none text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 select-none">
+                      <span>Ver más</span>
+                      ${CHEVRON_SVG}
+                    </summary>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 pt-1.5 leading-relaxed">
+                      ${road.description}
+                    </p>
+                  </details>
                 </div>
               </div>
             `;
@@ -300,39 +339,41 @@ export function renderResultsDashboard(container, evaluation) {
       </section>
 
       <!-- 4. CASCOS TÉCNICOS, KIT DE SEGURIDAD Y MULTAS -->
-      <section class="bg-white dark:bg-[#111927] rounded-xl border border-slate-300/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-6">
+      <section class="bg-white dark:bg-[#111927] rounded-xl border border-slate-300/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-5">
         <!-- Kit de Seguridad -->
         <div>
-          <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-            Elementos de protección y equipamiento obligatorio
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3.5">
-            Requisitos de protección personal y seguridad activa exigidos en vía pública.
-          </p>
+          <div class="mb-3.5">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+              Elementos de protección y equipamiento obligatorio
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Requisitos de protección personal y seguridad activa exigidos en vía pública.
+            </p>
+          </div>
 
-          <!-- Especificación Técnica del Casco Reglamentario -->
-          <div class="mb-4 rounded-lg border ${
+          <!-- Especificación Técnica del Casco Reglamentario (con desplegable) -->
+          <div class="mb-3.5 rounded-lg border ${
             isVelmpu
               ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
               : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800'
           }">
-            <div class="p-4 sm:p-5 flex flex-col md:flex-row items-center gap-5">
-              <div class="w-full md:w-48 shrink-0 aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 flex flex-col items-center justify-center">
+            <div class="p-3.5 sm:p-4 flex flex-col md:flex-row items-center gap-4">
+              <div class="w-full md:w-36 shrink-0 aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 flex flex-col items-center justify-center">
                 <img
                   src="${isVelmpu ? './styles/casco-velmpu.svg' : './styles/casco-ciclomotor.png'}"
                   alt="Ilustración técnica del tipo de casco exigido por la ley para este vehículo"
-                  class="${isVelmpu ? 'w-full h-full object-contain' : 'w-24 h-24 object-contain filter drop-shadow-sm'}"
+                  class="${isVelmpu ? 'w-full h-full object-contain' : 'w-20 h-20 object-contain filter drop-shadow-sm'}"
                   loading="lazy"
                 />
-                <span class="mt-1 text-[11px] font-bold px-2 py-0.5 rounded text-center ${
+                <span class="mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded text-center ${
                   isVelmpu
                     ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                     : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
                 }">
-                  ${isVelmpu ? 'Casco Bicicleta / Patineta' : 'Casco Reglamentario Moto'}
+                  ${isVelmpu ? 'Casco Bici / Patineta' : 'Casco Reglamentario Moto'}
                 </span>
               </div>
-              <div class="flex-1 space-y-2">
+              <div class="flex-1 space-y-1.5 w-full">
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${
                     isVelmpu
@@ -346,7 +387,7 @@ export function renderResultsDashboard(container, evaluation) {
                   </span>
                 </div>
 
-                <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                   ${
                     isVelmpu
                       ? '¿Qué tipo de casco exige la ley para patinetas y bicicletas eléctricas?'
@@ -354,55 +395,81 @@ export function renderResultsDashboard(container, evaluation) {
                   }
                 </h4>
 
-                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                <p class="text-xs text-slate-700 dark:text-slate-300 leading-snug">
                   ${
                     isVelmpu
-                      ? '<strong>Está permitido el casco de ciclismo o patinaje</strong>, siempre que cuente con certificación técnica (como <strong>NTC 5239, EN 1078 o CPSC 1203</strong>) y esté <strong>abrochado con su barboquejo</strong>. No se permite transitar con el casco suelto ni con cascos plásticos de juguete.'
-                      : '<strong class="text-rose-700 dark:text-rose-300">PROHIBIDO usar casco de bicicleta en ciclomotores.</strong> La norma exige casco cerrado o abatible de motocicleta certificado bajo <strong>ECE 22.05 / ECE 22.06, DOT FMVSS 218 o NTC 4533</strong> con visor reglamentario y broche micrométrico o doble D.'
+                      ? 'Está permitido el casco de ciclismo o patinaje con certificación técnica y barboquejo abrochado.'
+                      : 'Prohibido usar casco de bicicleta. Exige casco cerrado o abatible de moto (ECE 22.06 / DOT / NTC 4533).'
                   }
                 </p>
 
-                <div class="pt-1 flex flex-wrap gap-1.5 text-[11px] font-semibold">
-                  <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 ">
-                    ${isVelmpu ? 'Norma: NTC 5239 / EN 1078' : 'Norma: ECE 22.06 / DOT / NTC 4533'}
-                  </span>
-                  <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
-                    Obligatorio barboquejo abrochado
-                  </span>
-                  <span class="px-2 py-0.5 rounded ${
-                    isVelmpu
-                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
-                      : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
-                  }">
-                    ${isVelmpu ? 'No exige casco cerrado de moto' : 'Casco de bicicleta = Inmovilización'}
-                  </span>
-                </div>
+                <!-- Desplegable técnico del casco -->
+                <details class="group mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                  <summary class="inline-flex items-center gap-1.5 cursor-pointer list-none text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 select-none">
+                    <span>Ver más</span>
+                    ${CHEVRON_SVG}
+                  </summary>
+                  <div class="pt-2 space-y-2">
+                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                      ${
+                        isVelmpu
+                          ? '<strong>SÍ puedes usar el casco de ciclismo o patinaje</strong>, siempre que cuente con certificación técnica (como <strong>NTC 5239, EN 1078 o CPSC 1203</strong>) y esté <strong>abrochado con su barboquejo</strong>. No se permite transitar con el casco suelto ni con cascos plásticos de juguete.'
+                          : '<strong class="text-rose-700 dark:text-rose-300">ESTRICTAMENTE PROHIBIDO usar casco de bicicleta en ciclomotores.</strong> La norma exige casco cerrado o abatible de motocicleta certificado bajo <strong>ECE 22.05 / ECE 22.06, DOT FMVSS 218 o NTC 4533</strong> con visor reglamentario y broche micrométrico o doble D.'
+                      }
+                    </p>
+                    <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                      <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                        ${isVelmpu ? 'Norma: NTC 5239 / EN 1078' : 'Norma: ECE 22.06 / DOT / NTC 4533'}
+                      </span>
+                      <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                        Obligatorio barboquejo abrochado
+                      </span>
+                      <span class="px-2 py-0.5 rounded ${
+                        isVelmpu
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                          : 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300'
+                      }">
+                        ${isVelmpu ? 'No exige casco cerrado de moto' : 'Casco de bicicleta = Inmovilización'}
+                      </span>
+                    </div>
+                  </div>
+                </details>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Otros elementos del kit de seguridad (con desplegables) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             ${safetyKit.items
               .map((item) => {
                 const st = getSemaphoreStyles(item.semaphore);
                 return `
-                <div class="p-3.5 rounded-lg border ${st.card} flex items-start gap-3">
-                  <div class="p-2 rounded-md bg-white dark:bg-slate-900 ${st.icon} shrink-0">
-                    ${SAFETY_ICONS[item.id] || ICONS.helmet}
-                  </div>
-                  <div class="flex-1">
-                    <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                      <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                <div class="p-3.5 rounded-lg border ${st.card} flex flex-col justify-between transition-colors">
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="p-1.5 rounded-md bg-white dark:bg-slate-900 ${st.icon} shrink-0">
+                        ${SAFETY_ICONS[item.id] || ICONS.helmet}
+                      </div>
+                      <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight">
                         ${item.name}
                       </h4>
-                      <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${st.badge}">
+                    </div>
+                    <div>
+                      <span class="inline-flex text-[11px] font-semibold px-2 py-0.5 rounded ${st.badge}">
                         ${item.badge}
                       </span>
                     </div>
-                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  </div>
+
+                  <details class="group mt-2.5 pt-1.5 border-t border-slate-200/50 dark:border-slate-800/50">
+                    <summary class="flex items-center justify-between cursor-pointer list-none text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 select-none">
+                      <span>Ver más</span>
+                      ${CHEVRON_SVG}
+                    </summary>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 pt-1.5 leading-relaxed">
                       ${item.specification}
                     </p>
-                  </div>
+                  </details>
                 </div>
               `;
               })
@@ -410,9 +477,9 @@ export function renderResultsDashboard(container, evaluation) {
           </div>
         </div>
 
-        <!-- Cuadro de Sanciones, Multas e Inmovilización -->
-        <div class="pt-5 border-t border-slate-200 dark:border-slate-800">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+        <!-- Cuadro de Sanciones, Multas e Inmovilización (Desplegable Principal) -->
+        <div class="pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div>
               <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Régimen sancionatorio y causales de inmovilización
@@ -429,7 +496,7 @@ export function renderResultsDashboard(container, evaluation) {
           ${
             sanctions.activeAlerts.length > 0
               ? `
-            <div class="mb-4 p-3 rounded-lg bg-rose-700 text-white shadow-xs">
+            <div class="mb-3 p-3 rounded-lg bg-rose-700 text-white shadow-xs">
               <div class="flex items-start gap-2.5">
                 ${ICONS.xOctagon}
                 <div class="text-xs font-semibold">
@@ -441,47 +508,65 @@ export function renderResultsDashboard(container, evaluation) {
               : ''
           }
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <!-- Conductas Sancionadas -->
-            <div class="p-3.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800/80">
-              <div class="flex items-center gap-2 text-amber-950 dark:text-amber-200 font-bold text-xs sm:text-sm mb-2.5">
-                <span class="text-amber-700 dark:text-amber-400">${ICONS.alertTriangle}</span>
-                <span>Infracciones económicas (${sanctions.fineLabel})</span>
-              </div>
-              <ul class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
-                ${sanctions.finesList
-                  .map(
-                    (fine) => `
-                  <li class="flex items-start gap-2">
-                    <span class="text-amber-600 dark:text-amber-400 font-bold">•</span>
-                    <span>${fine}</span>
-                  </li>
-                `
-                  )
-                  .join('')}
-              </ul>
-            </div>
+          <!-- Desplegable del desglose de sanciones -->
+          <details class="group rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <summary class="flex items-center justify-between cursor-pointer list-none p-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 select-none transition-colors">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Desglose de infracciones y causales de inmovilización</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                <span>Ver más</span>
+                ${CHEVRON_SVG}
+              </span>
+            </summary>
+            <div class="p-3.5 bg-white dark:bg-[#111927] border-t border-slate-200 dark:border-slate-800">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <!-- Conductas Sancionadas -->
+                <div class="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800/80">
+                  <div class="flex items-center gap-2 text-amber-950 dark:text-amber-200 font-bold text-xs sm:text-sm mb-2">
+                    <span class="text-amber-700 dark:text-amber-400">${ICONS.alertTriangle}</span>
+                    <span>Infracciones económicas (${sanctions.fineLabel})</span>
+                  </div>
+                  <ul class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                    ${sanctions.finesList
+                      .map(
+                        (fine) => `
+                      <li class="flex items-start gap-2">
+                        <span class="text-amber-600 dark:text-amber-400 font-bold">•</span>
+                        <span>${fine}</span>
+                      </li>
+                    `
+                      )
+                      .join('')}
+                  </ul>
+                </div>
 
-            <!-- Causales de Inmovilización -->
-            <div class="p-3.5 rounded-lg bg-rose-50/70 dark:bg-rose-950/20 border border-rose-300 dark:border-rose-800/80">
-              <div class="flex items-center gap-2 text-rose-950 dark:text-rose-200 font-bold text-xs sm:text-sm mb-2.5">
-                <span class="text-rose-700 dark:text-rose-400">${ICONS.xOctagon}</span>
-                <span>Causales de inmovilización inmediata</span>
+                <!-- Causales de Inmovilización -->
+                <div class="p-3 rounded-lg bg-rose-50/70 dark:bg-rose-950/20 border border-rose-300 dark:border-rose-800/80">
+                  <div class="flex items-center gap-2 text-rose-950 dark:text-rose-200 font-bold text-xs sm:text-sm mb-2">
+                    <span class="text-rose-700 dark:text-rose-400">${ICONS.xOctagon}</span>
+                    <span>Causales de inmovilización inmediata</span>
+                  </div>
+                  <ul class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+                    ${sanctions.immobilizationCauses
+                      .map(
+                        (cause) => `
+                      <li class="flex items-start gap-2">
+                        <span class="text-rose-600 dark:text-rose-400 font-bold">•</span>
+                        <span>${cause}</span>
+                      </li>
+                    `
+                      )
+                      .join('')}
+                  </ul>
+                </div>
               </div>
-              <ul class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
-                ${sanctions.immobilizationCauses
-                  .map(
-                    (cause) => `
-                  <li class="flex items-start gap-2">
-                    <span class="text-rose-600 dark:text-rose-400 font-bold">•</span>
-                    <span>${cause}</span>
-                  </li>
-                `
-                  )
-                  .join('')}
-              </ul>
             </div>
-          </div>
+          </details>
         </div>
       </section>
     </div>

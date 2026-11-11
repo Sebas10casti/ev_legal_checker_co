@@ -69,33 +69,73 @@ function buildShareMessage(evaluation) {
   ].join('\n');
 }
 
+const THEME_ICONS = {
+  sun: `
+    <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </svg>
+  `,
+  moon: `
+    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  `,
+};
+
 /**
- * Inicializa el control de tema Claro / Oscuro.
+ * Inicializa el control de tema Claro / Oscuro priorizando la configuración del celular o navegador.
  */
 function initThemeToggle() {
   const toggleBtn = document.getElementById('btn-theme-toggle');
   const themeLabel = document.getElementById('theme-toggle-label');
-  if (!toggleBtn) return;
+  const themeIcon = document.getElementById('theme-toggle-icon');
+  const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
 
-  function syncThemeUI() {
-    const isDark = document.documentElement.classList.contains('dark');
+  function applyTheme(isDark) {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     if (themeLabel) {
       themeLabel.textContent = isDark ? 'Modo claro' : 'Modo oscuro';
     }
-    toggleBtn.setAttribute('aria-pressed', String(isDark));
+    if (themeIcon) {
+      themeIcon.innerHTML = isDark ? THEME_ICONS.sun : THEME_ICONS.moon;
+    }
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-pressed', String(isDark));
+    }
   }
 
-  toggleBtn.addEventListener('click', () => {
-    const isDark = document.documentElement.classList.toggle('dark');
-    try {
-      localStorage.setItem('ev_legal_theme', isDark ? 'dark' : 'light');
-    } catch {
-      // Ignorar errores de almacenamiento en modo privado restringido
-    }
-    syncThemeUI();
-  });
+  // 1. Priorizar configuración del sistema / celular
+  const systemDark = mediaQuery ? mediaQuery.matches : false;
+  const saved = localStorage.getItem('ev_legal_theme_manual');
+  const initialDark = saved !== null ? saved === 'dark' : systemDark;
+  applyTheme(initialDark);
 
-  syncThemeUI();
+  // 2. Escuchar cambios automáticos del celular / navegador en tiempo real
+  if (mediaQuery && mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', (e) => {
+      // Cuando el celular cambia entre modo claro y oscuro, actualiza automáticamente
+      applyTheme(e.matches);
+      try {
+        localStorage.removeItem('ev_legal_theme_manual');
+      } catch {}
+    });
+  }
+
+  // 3. Botón para alternar manualmente
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isDark = !document.documentElement.classList.contains('dark');
+      applyTheme(isDark);
+      try {
+        localStorage.setItem('ev_legal_theme_manual', isDark ? 'dark' : 'light');
+      } catch {}
+    });
+  }
 }
 
 /**

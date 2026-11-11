@@ -9,13 +9,16 @@
       content="Calculadora y validador normativo interactivo de movilidad eléctrica en Colombia. Evalúa si tu patineta, bicicleta eléctrica o ciclomotor requiere SOAT, placa y licencia bajo la Ley 2486 de 2025."
     />
 
-    <!-- Inicialización temprana de modo claro/oscuro para evitar parpadeo (FOUC) -->
+    <!-- Inicialización temprana de modo claro/oscuro priorizando la configuración del celular/navegador -->
     <script>
       (function () {
         try {
-          var saved = localStorage.getItem('ev_legal_theme');
-          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (saved === 'dark' || (!saved && prefersDark)) {
+          var media = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+          var systemDark = media ? media.matches : false;
+          var saved = localStorage.getItem('ev_legal_theme_manual');
+          // Prioridad: configuración del celular/navegador; si el usuario guardó un ajuste manual explícito, se respeta
+          var isDark = saved !== null ? (saved === 'dark') : systemDark;
+          if (isDark) {
             document.documentElement.classList.add('dark');
           } else {
             document.documentElement.classList.remove('dark');
@@ -60,7 +63,7 @@
 
   <body class="min-h-full flex flex-col bg-slate-100/80 dark:bg-[#0a0f18] text-slate-900 dark:text-slate-100 antialiased selection:bg-emerald-600 selection:text-white">
     <!-- HEADER CÍVICO NORMATIVO -->
-    <header class="bg-white dark:bg-[#101725] border-b border-slate-200 dark:border-slate-800/80 sticky top-0 z-30 shadow-xs">
+    <header class="bg-white dark:bg-[#101725] border-b border-slate-200 dark:border-slate-800/80 shadow-xs">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div class="space-y-1">
@@ -74,10 +77,10 @@
               </span>
             </div>
             <h1 class="text-xl sm:text-2xl lg:text-[1.75rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              ¿Qué exige la ley para mi vehículo eléctrico?
+              Comprueba los requisitos para movilizarte
             </h1>
             <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
-              Diagnóstico normativo en tiempo real para patinetas, bicicletas eléctricas, monociclos y ciclomotores. Consulta exigencias de SOAT, matrícula, licencia y límites de velocidad.
+              Validador normativo en tiempo real de SOAT, matrícula, licencia y límites de velocidad en Colombia (Ley 2486 de 2025 vs. Res. 160 de 2017).
             </p>
           </div>
 
@@ -88,17 +91,30 @@
               aria-pressed="false"
               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-emerald-600 transition-colors cursor-pointer"
             >
-              <svg class="w-4 h-4 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-              </svg>
+              <span id="theme-toggle-icon" class="flex items-center justify-center"></span>
               <span id="theme-toggle-label">Modo oscuro</span>
             </button>
           </div>
         </div>
+      </div>
+    </header>
 
+    <!-- CONTENIDO PRINCIPAL: 2 COLUMNAS (CONTROLES / DICTAMEN) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        <!-- Columna Izquierda: Parámetros del Vehículo (5 cols en lg) -->
+        <div id="vehicle-form-root" class="lg:col-span-5 lg:sticky lg:top-6"></div>
+
+        <!-- Columna Derecha: Dictamen y Resultados en Vivo (7 cols en lg) -->
+        <div id="results-dashboard-root" class="lg:col-span-7"></div>
+      </div>
+    </main>
+
+    <!-- FOOTER CON ENLACES OFICIALES, AVISO LEGAL Y UTILIDADES DE COMPARTIR -->
+    <footer class="bg-white dark:bg-[#101725] border-t border-slate-200 dark:border-slate-800/80 mt-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Aviso Legal Informativo -->
-        <div class="mt-3 px-3.5 py-2 rounded-lg bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 flex items-start sm:items-center gap-2.5 text-xs text-amber-900 dark:text-amber-200 shadow-2xs">
+        <div class="mb-5 px-3.5 py-2.5 rounded-lg bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 flex items-start sm:items-center gap-2.5 text-xs text-amber-900 dark:text-amber-200 shadow-2xs">
           <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="16" x2="12" y2="12" />
@@ -108,23 +124,7 @@
             <strong class="font-bold text-amber-950 dark:text-amber-100">Aviso informativo:</strong> Esta herramienta pedagógica evalúa los requisitos técnicos vigentes del Código Nacional de Tránsito y no reemplaza el criterio formal de los agentes o autoridades viales.
           </p>
         </div>
-      </div>
-    </header>
 
-    <!-- CONTENIDO PRINCIPAL: 2 COLUMNAS (CONTROLES / DICTAMEN) -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-        <!-- Columna Izquierda: Parámetros del Vehículo (5 cols en lg) -->
-        <div id="vehicle-form-root" class="lg:col-span-5 lg:sticky lg:top-32"></div>
-
-        <!-- Columna Derecha: Dictamen y Resultados en Vivo (7 cols en lg) -->
-        <div id="results-dashboard-root" class="lg:col-span-7"></div>
-      </div>
-    </main>
-
-    <!-- FOOTER CON ENLACES OFICIALES Y UTILIDADES DE COMPARTIR -->
-    <footer class="bg-white dark:bg-[#101725] border-t border-slate-200 dark:border-slate-800/80 mt-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
           <div class="space-y-1.5">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">

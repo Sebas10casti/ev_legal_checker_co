@@ -530,12 +530,13 @@ export function evaluateSafetyKit(category) {
       },
       {
         id: 'pasajeros',
-        name: 'Límite de Pasajeros (Parrillero)',
+        name: 'Límite de Pasajeros y Niños',
         mandatory: true,
         semaphore: 'red',
-        badge: 'Uso Estrictamente Individual',
-        specification:
-          'Prohibido llevar acompañante o parrillero, salvo que el vehículo cuente con homologación y diseño original de fábrica para 2 plazas.',
+        badge: isVelmpu ? 'Individual / Máx. 2 niños en bicicarga' : 'Máx. 1 Acompañante',
+        specification: isVelmpu
+          ? 'Patinetas y monociclos: uso estrictamente individual (0 pasajeros). Bicicletas/E-bikes: 1 niño en sillita homologada o hasta 2 niños exclusivamente en bicicletas de carga (cargo bikes) diseñadas de fábrica con arnés. Llevar más de 2 niños (+2) está terminantemente prohibido por seguridad vial y sobrecupo.'
+          : 'Prohibido sobrecupo (máximo 1 acompañante si la tarjeta de propiedad lo autoriza). Prohibido llevar más de un acompañante o transportar menores de 10 años en motocicleta (decretos distritales y municipales).',
       },
     ],
   };
@@ -562,6 +563,7 @@ export function evaluateSanctions(input, classification, ageEvaluation) {
         'Exceder los 25 km/h en ciclorrutas o los 40 km/h en vías vehiculares urbanas.',
         'Transitar por andenes, aceras o zonas peatonales.',
         'Circular sin luces (blanca delantera / roja trasera) o sin prendas reflectivas entre las 6:00 p.m. y las 6:00 a.m.',
+        'Transportar pasajeros en patinetas/monociclos o llevar más de 2 niños en bicicleta (prohibido sobrecupo e inseguridad vial).',
         'Transportar paquetes, cargas o elementos que afecten la visibilidad o la maniobrabilidad.',
         'No utilizar la ciclorruta cuando esta se encuentre disponible.',
       ],
@@ -582,6 +584,7 @@ export function evaluateSanctions(input, classification, ageEvaluation) {
       'Multa Tipo D02 (30 SMLDV + Inmovilización): Transitar sin portar el SOAT vigente.',
       'Multa Tipo D01 (30 SMLDV + Inmovilización): Conducir sin haber obtenido la licencia de conducción categoría A1/A2.',
       'Multa Tipo D05 (30 SMLDV + Inmovilización): Transitar por andenes, aceras, puentes peatonales o ciclorrutas.',
+      'Multa Tipo C15 / C24 (15 SMLDV + Inmovilización): Conducir con sobrecupo (llevar más de 1 acompañante o transportar menores de 10 años).',
       'Multa Tipo C35 (15 SMLDV + Inmovilización): No realizar la Revisión Técnico-Mecánica en el plazo legal.',
       'Multa Tipo B03 (8 SMLDV): Conducir un vehículo sin placas o sin matrícula registrada en el RUNT.',
     ],

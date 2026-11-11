@@ -3,7 +3,7 @@
  * Copia los activos con rutas relativas y crea el archivo .nojekyll.
  */
 
-import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,6 +16,9 @@ mkdirSync(distDir, { recursive: true });
 
 cpSync(resolve(rootDir, 'index.html'), resolve(distDir, 'index.html'));
 cpSync(resolve(rootDir, 'styles'), resolve(distDir, 'styles'), { recursive: true });
+if (existsSync(resolve(rootDir, 'docs'))) {
+  cpSync(resolve(rootDir, 'docs'), resolve(distDir, 'docs'), { recursive: true });
+}
 cpSync(resolve(rootDir, 'src'), resolve(distDir, 'src'), {
   recursive: true,
   filter: (srcPath) => !srcPath.endsWith('.test.js'),
